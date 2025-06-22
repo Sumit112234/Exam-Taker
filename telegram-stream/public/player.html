@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Stream Telegram Video</title>
+  <style>
+    body {
+      background: #000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      color: white;
+      flex-direction: column;
+    }
+    video {
+      border: 4px solid #00f;
+      border-radius: 10px;
+      width: 80%;
+      max-width: 720px;
+      height: auto;
+    }
+  </style>
+</head>
+<body>
+  <h2>Streaming Telegram Video</h2>
+  <video id="player" controls autoplay></video>
+
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const fileId = urlParams.get('file_id');
+
+    if (!fileId) {
+      document.body.innerHTML = "<h2>❌ file_id not provided in URL</h2>";
+    } else {
+      const player = document.getElementById("player");
+      player.src = `/stream?file_id=${fileId}`;
+    }
+  </script>
+</body>
+</html>
