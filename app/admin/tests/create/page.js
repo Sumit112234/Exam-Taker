@@ -252,7 +252,7 @@ export default function CreateTest() {
                         <SelectValue placeholder="Select subject" />
                       </SelectTrigger>
                       <SelectContent>
-                        {selectedCategory.subjects.map((subject, index) => (
+                        {selectedCategory.length > 0 && selectedCategory.subjects.map((subject, index) => (
                           <SelectItem key={index} value={subject.name}>
                             {subject.name}
                           </SelectItem>

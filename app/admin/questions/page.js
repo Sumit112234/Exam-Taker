@@ -18,7 +18,7 @@ import {
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Search, Plus, Edit, Trash2, Upload, Eye, ImageIcon, FileText, BarChart3, X, Save } from "lucide-react"
+import { Search, Plus, Edit, Trash2, Upload, Eye, ImageIcon, FileText, BarChart3, X, Save, Loader2, UploadIcon } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 
 export default function QuestionsManagement() {
@@ -44,6 +44,8 @@ export default function QuestionsManagement() {
   const [newTag, setNewTag] = useState("")
   const [availableExams, setAvailableExams] = useState([])
   const [availableSections, setAvailableSections] = useState([])
+  const [uploadLoading, setUploadLoading] = useState(false)
+
 
   const [newQuestion, setNewQuestion] = useState({
     category: "",
@@ -304,10 +306,13 @@ export default function QuestionsManagement() {
 
   const handleBulkUpload = async () => {
     try {
+
       if (!bulkUploadData.category || !bulkUploadData.examId || !bulkUploadData.sectionId) {
         alert("Please select category, exam, and section")
         return
       }
+
+      setUploadLoading(true);
 
       const formData = new FormData()
 
@@ -353,6 +358,9 @@ export default function QuestionsManagement() {
     } catch (error) {
       console.error("Error uploading questions:", error)
       alert("Error uploading questions")
+    }
+    finally{
+      setUploadLoading(false);
     }
   }
 
@@ -416,7 +424,7 @@ export default function QuestionsManagement() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 px-10">
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Questions Management</h1>
@@ -649,17 +657,28 @@ export default function QuestionsManagement() {
                   >
                     Cancel
                   </Button>
+
                   <Button
                     onClick={handleBulkUpload}
                     disabled={
+                      uploadLoading ||
                       !bulkUploadData.category ||
                       !bulkUploadData.examId ||
                       !bulkUploadData.sectionId ||
                       (!bulkUploadData.questions && !bulkUploadData.file)
                     }
                   >
-                    <Upload className="mr-2 h-4 w-4" />
-                    Upload Questions
+                    {uploadLoading ? (
+                      <div className="flex items-center gap-2">
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Uploading...
+                      </div>
+                    ) : (
+                      <>
+                        <UploadIcon className="mr-2 h-4 w-4" />
+                        Upload Questions
+                      </>
+                    )}
                   </Button>
                 </div>
               </div>

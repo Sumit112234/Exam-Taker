@@ -4,7 +4,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { BarChart3, BookOpen, Clock, Settings, User } from "lucide-react"
+import { BarChart3, BookOpen, Clock, CreditCard, HelpCircle, Settings, User } from "lucide-react"
 
 const items = [
   {
@@ -28,9 +28,14 @@ const items = [
     icon: User,
   },
   {
-    title: "Settings",
-    href: "/settings",
-    icon: Settings,
+    title: "Subscriptions",
+    href: "/subscriptions",
+    icon: CreditCard,
+  },
+  {
+    title: "Help",
+    href: "/contact",
+    icon: HelpCircle,
   },
 ]
 

@@ -82,7 +82,7 @@ export default function ResultsPage({ params }) {
   }
 
   return (
-    <div className="container py-6">
+    <div className="container py-6 px-10 w-full">
       {/* Header with back button */}
       <div className="flex items-center gap-4 mb-6">
         <Button variant="outline" size="icon" onClick={() => router.back()}>

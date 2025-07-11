@@ -8,6 +8,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Separator } from "@/components/ui/separator"
+import { Checkbox } from "@/components/ui/checkbox"
 import {
   Dialog,
   DialogContent,
@@ -29,7 +32,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { useToast } from "@/components/ui/use-toast"
-import { Plus, MoreVertical, Pencil, Trash2, FolderOpen, BookOpen, FileText } from "lucide-react"
+import { Plus, MoreVertical, Pencil, Trash2, FolderOpen, BookOpen, FileText, X } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
 
 export default function CategoriesPage() {
@@ -45,7 +48,18 @@ export default function CategoriesPage() {
     description: "",
     icon: "📚",
     color: "#3B82F6",
+    exams: []
   })
+
+  const [newExam, setNewExam] = useState({
+    name: "",
+    code: "",
+    description: "",
+    types: ["mock", "mini-mock", "section-wise"],
+    isActive: true
+  })
+
+  const examTypes = ["mock", "mini-mock", "section-wise", "chapter-wise", "practice"]
 
   const router = useRouter()
   const { toast } = useToast()
@@ -80,10 +94,7 @@ export default function CategoriesPage() {
       const response = await fetch("/api/admin/categories", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...formData,
-          exams: [],
-        }),
+        body: JSON.stringify(formData),
       })
 
       if (response.ok) {
@@ -172,6 +183,7 @@ export default function CategoriesPage() {
       description: category.description || "",
       icon: category.icon || "📚",
       color: category.color || "#3B82F6",
+      exams: category.exams || []
     })
     setIsEditDialogOpen(true)
   }
@@ -188,6 +200,14 @@ export default function CategoriesPage() {
       description: "",
       icon: "📚",
       color: "#3B82F6",
+      exams: []
+    })
+    setNewExam({
+      name: "",
+      code: "",
+      description: "",
+      types: ["mock", "mini-mock", "section-wise"],
+      isActive: true
     })
   }
 
@@ -196,6 +216,64 @@ export default function CategoriesPage() {
     setFormData((prev) => ({
       ...prev,
       [name]: name === "code" ? value.toUpperCase() : value,
+    }))
+  }
+
+  const handleExamInputChange = (e) => {
+    const { name, value } = e.target
+    setNewExam((prev) => ({
+      ...prev,
+      [name]: name === "code" ? value.toUpperCase() : value,
+    }))
+  }
+
+  const handleExamTypeToggle = (type, checked) => {
+    setNewExam((prev) => ({
+      ...prev,
+      types: checked 
+        ? [...prev.types, type]
+        : prev.types.filter(t => t !== type)
+    }))
+  }
+
+  const addExamToCategory = () => {
+    if (!newExam.name || !newExam.code) {
+      toast({
+        title: "Error",
+        description: "Exam name and code are required",
+        variant: "destructive",
+      })
+      return
+    }
+
+    const examToAdd = {
+      ...newExam,
+      sections: [] // Initialize with empty sections
+    }
+
+    setFormData(prev => ({
+      ...prev,
+      exams: [...prev.exams, examToAdd]
+    }))
+
+    setNewExam({
+      name: "",
+      code: "",
+      description: "",
+      types: ["mock", "mini-mock", "section-wise"],
+      isActive: true
+    })
+
+    toast({
+      title: "Success",
+      description: "Exam added to category",
+    })
+  }
+
+  const removeExamFromCategory = (index) => {
+    setFormData(prev => ({
+      ...prev,
+      exams: prev.exams.filter((_, i) => i !== index)
     }))
   }
 
@@ -217,29 +295,214 @@ export default function CategoriesPage() {
               Add Category
             </Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Create New Category</DialogTitle>
-              <DialogDescription>Add a new exam category to organize your exams</DialogDescription>
+              <DialogDescription>Add a new exam category and optionally add exams to it</DialogDescription>
             </DialogHeader>
-            <div className="grid gap-4 py-4">
+            
+            <Tabs defaultValue="category" className="w-full">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="category">Category Details</TabsTrigger>
+                <TabsTrigger value="exams">Add Exams</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="category" className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="name">Category Name</Label>
+                    <Input
+                      id="name"
+                      name="name"
+                      placeholder="e.g., Banking"
+                      value={formData.name}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="code">Category Code</Label>
+                    <Input
+                      id="code"
+                      name="code"
+                      placeholder="e.g., BANK"
+                      value={formData.code}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="icon">Icon</Label>
+                    <Input id="icon" name="icon" placeholder="📚" value={formData.icon} onChange={handleInputChange} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="color">Color</Label>
+                    <div className="flex gap-2">
+                      <Input
+                        type="color"
+                        id="color"
+                        name="color"
+                        value={formData.color}
+                        onChange={handleInputChange}
+                        className="w-12 h-10 p-1"
+                      />
+                      <Input
+                        type="text"
+                        value={formData.color}
+                        onChange={handleInputChange}
+                        name="color"
+                        className="flex-1"
+                      />
+                    </div>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="description">Description</Label>
+                  <Textarea
+                    id="description"
+                    name="description"
+                    placeholder="Describe this category..."
+                    value={formData.description}
+                    onChange={handleInputChange}
+                  />
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="exams" className="space-y-4">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-medium">Add Exam to Category</h3>
+                    <Badge variant="outline">{formData.exams.length} Exams Added</Badge>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="exam-name">Exam Name</Label>
+                      <Input
+                        id="exam-name"
+                        name="name"
+                        placeholder="e.g., IBPS PO"
+                        value={newExam.name}
+                        onChange={handleExamInputChange}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="exam-code">Exam Code</Label>
+                      <Input
+                        id="exam-code"
+                        name="code"
+                        placeholder="e.g., IBPSPO"
+                        value={newExam.code}
+                        onChange={handleExamInputChange}
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="exam-description">Exam Description</Label>
+                    <Textarea
+                      id="exam-description"
+                      name="description"
+                      placeholder="Describe this exam..."
+                      value={newExam.description}
+                      onChange={handleExamInputChange}
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label>Exam Types</Label>
+                    <div className="grid grid-cols-3 gap-2">
+                      {examTypes.map((type) => (
+                        <div key={type} className="flex items-center space-x-2">
+                          <Checkbox
+                            id={type}
+                            checked={newExam.types.includes(type)}
+                            onCheckedChange={(checked) => handleExamTypeToggle(type, checked)}
+                          />
+                          <Label htmlFor={type} className="text-sm capitalize">
+                            {type.replace('-', ' ')}
+                          </Label>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  <Button onClick={addExamToCategory} className="w-full">
+                    <Plus className="mr-2 h-4 w-4" />
+                    Add Exam
+                  </Button>
+                  
+                  {formData.exams.length > 0 && (
+                    <>
+                      <Separator />
+                      <div className="space-y-2">
+                        <Label>Added Exams</Label>
+                        <div className="space-y-2 max-h-48 overflow-y-auto">
+                          {formData.exams.map((exam, index) => (
+                            <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
+                              <div className="flex-1">
+                                <div className="font-medium">{exam.name}</div>
+                                <div className="text-sm text-muted-foreground">
+                                  {exam.code} • {exam.types.join(', ')}
+                                </div>
+                              </div>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => removeExamFromCategory(index)}
+                              >
+                                <X className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </TabsContent>
+            </Tabs>
+            
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleCreateCategory}>Create Category</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </div>
+
+      {/* Edit Category Dialog */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Edit Category</DialogTitle>
+            <DialogDescription>Update the category details and manage exams</DialogDescription>
+          </DialogHeader>
+          
+          <Tabs defaultValue="category" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="category">Category Details</TabsTrigger>
+              <TabsTrigger value="exams">Manage Exams</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="category" className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="name">Category Name</Label>
+                  <Label htmlFor="edit-name">Category Name</Label>
                   <Input
-                    id="name"
+                    id="edit-name"
                     name="name"
-                    placeholder="e.g., Banking"
                     value={formData.name}
                     onChange={handleInputChange}
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="code">Category Code</Label>
+                  <Label htmlFor="edit-code">Category Code</Label>
                   <Input
-                    id="code"
+                    id="edit-code"
                     name="code"
-                    placeholder="e.g., BANK"
                     value={formData.code}
                     onChange={handleInputChange}
                   />
@@ -247,15 +510,20 @@ export default function CategoriesPage() {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="icon">Icon</Label>
-                  <Input id="icon" name="icon" placeholder="📚" value={formData.icon} onChange={handleInputChange} />
+                  <Label htmlFor="edit-icon">Icon</Label>
+                  <Input
+                    id="edit-icon"
+                    name="icon"
+                    value={formData.icon}
+                    onChange={handleInputChange}
+                  />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="color">Color</Label>
+                  <Label htmlFor="edit-color">Color</Label>
                   <div className="flex gap-2">
                     <Input
                       type="color"
-                      id="color"
+                      id="edit-color"
                       name="color"
                       value={formData.color}
                       onChange={handleInputChange}
@@ -272,80 +540,116 @@ export default function CategoriesPage() {
                 </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="description">Description</Label>
+                <Label htmlFor="edit-description">Description</Label>
                 <Textarea
-                  id="description"
+                  id="edit-description"
                   name="description"
-                  placeholder="Describe this category..."
                   value={formData.description}
                   onChange={handleInputChange}
                 />
               </div>
-            </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
-                Cancel
-              </Button>
-              <Button onClick={handleCreateCategory}>Create Category</Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      </div>
-
-      {/* Edit Category Dialog */}
-      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Edit Category</DialogTitle>
-            <DialogDescription>Update the details of this category</DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="edit-name">Category Name</Label>
-                <Input id="edit-name" name="name" value={formData.name} onChange={handleInputChange} />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="edit-code">Category Code</Label>
-                <Input id="edit-code" name="code" value={formData.code} onChange={handleInputChange} />
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="edit-icon">Icon</Label>
-                <Input id="edit-icon" name="icon" value={formData.icon} onChange={handleInputChange} />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="edit-color">Color</Label>
-                <div className="flex gap-2">
-                  <Input
-                    type="color"
-                    id="edit-color"
-                    name="color"
-                    value={formData.color}
-                    onChange={handleInputChange}
-                    className="w-12 h-10 p-1"
-                  />
-                  <Input
-                    type="text"
-                    value={formData.color}
-                    onChange={handleInputChange}
-                    name="color"
-                    className="flex-1"
+            </TabsContent>
+            
+            <TabsContent value="exams" className="space-y-4">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-medium">Add New Exam</h3>
+                  <Badge variant="outline">{formData.exams.length} Exams Total</Badge>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-exam-name">Exam Name</Label>
+                    <Input
+                      id="edit-exam-name"
+                      name="name"
+                      placeholder="e.g., IBPS PO"
+                      value={newExam.name}
+                      onChange={handleExamInputChange}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-exam-code">Exam Code</Label>
+                    <Input
+                      id="edit-exam-code"
+                      name="code"
+                      placeholder="e.g., IBPSPO"
+                      value={newExam.code}
+                      onChange={handleExamInputChange}
+                    />
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="edit-exam-description">Exam Description</Label>
+                  <Textarea
+                    id="edit-exam-description"
+                    name="description"
+                    placeholder="Describe this exam..."
+                    value={newExam.description}
+                    onChange={handleExamInputChange}
                   />
                 </div>
+                
+                <div className="space-y-2">
+                  <Label>Exam Types</Label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {examTypes.map((type) => (
+                      <div key={type} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={`edit-${type}`}
+                          checked={newExam.types.includes(type)}
+                          onCheckedChange={(checked) => handleExamTypeToggle(type, checked)}
+                        />
+                        <Label htmlFor={`edit-${type}`} className="text-sm capitalize">
+                          {type.replace('-', ' ')}
+                        </Label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                
+                <Button onClick={addExamToCategory} className="w-full">
+                  <Plus className="mr-2 h-4 w-4" />
+                  Add Exam
+                </Button>
+                
+                {formData.exams.length > 0 && (
+                  <>
+                    <Separator />
+                    <div className="space-y-2">
+                      <Label>Current Exams</Label>
+                      <div className="space-y-2 max-h-48 overflow-y-auto">
+                        {formData.exams.map((exam, index) => (
+                          <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
+                            <div className="flex-1">
+                              <div className="font-medium">{exam.name}</div>
+                              <div className="text-sm text-muted-foreground">
+                                {exam.code} • {exam.types.join(', ')}
+                              </div>
+                              {exam.description && (
+                                <div className="text-xs text-muted-foreground mt-1">
+                                  {exam.description}
+                                </div>
+                              )}
+                            </div>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => removeExamFromCategory(index)}
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="edit-description">Description</Label>
-              <Textarea
-                id="edit-description"
-                name="description"
-                value={formData.description}
-                onChange={handleInputChange}
-              />
-            </div>
-          </div>
+            </TabsContent>
+          </Tabs>
+          
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
               Cancel
@@ -434,6 +738,7 @@ export default function CategoriesPage() {
                 <p className="text-sm text-muted-foreground mb-4">
                   {category.description || "No description provided."}
                 </p>
+
                 <div className="flex flex-wrap gap-2 mb-4">
                   <Badge variant="outline" className="flex items-center gap-1">
                     <BookOpen className="h-3 w-3" />
@@ -441,7 +746,6 @@ export default function CategoriesPage() {
                   </Badge>
                   <Badge variant="outline" className="flex items-center gap-1">
                     <FileText className="h-3 w-3" />
-                    {/* This would ideally be fetched from the API */}
                     {Math.floor(Math.random() * 500)} Questions
                   </Badge>
                 </div>

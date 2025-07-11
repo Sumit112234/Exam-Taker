@@ -8,9 +8,18 @@ export async function GET() {
 
     const subscriptions = await Subscription.find({ isActive: true }).sort({ price: 1 })
 
-    return NextResponse.json(subscriptions)
+    const stats = {
+      totalSubscriptions: subscriptions.length,
+      averagePrice: subscriptions.reduce((sum, sub) => sum + sub.price, 0) / subscriptions.length || 0,
+      mostPopular: subscriptions.find((sub) => sub.isPopular) || subscriptions[0],
+    }
+
+    return NextResponse.json({
+      subscriptions,
+      stats,
+    })
   } catch (error) {
-    console.error("Get subscriptions error:", error)
+    console.error("Error fetching subscriptions:", error)
     return NextResponse.json({ message: "Internal server error" }, { status: 500 })
   }
 }

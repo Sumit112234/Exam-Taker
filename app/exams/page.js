@@ -142,7 +142,7 @@ export default function ExamsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100 dark:from-blue-950 dark:via-gray-900 dark:to-blue-900">
+    <div className="min-h-screen mx-10 bg-gradient-to-br from-blue-50 via-white to-blue-100 dark:from-blue-950 dark:via-gray-900 dark:to-blue-900">
       <div className="container py-6">
         <div className="mb-6">
           <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
@@ -335,7 +335,7 @@ export default function ExamsPage() {
         View Details
       </Button>
     </Link>
-    <Link href={`/exams/${exam._id}/start`} className="flex-1">
+    <Link href={`/exams/${exam._id}/instructions`} className="flex-1">
       <Button className="w-full">
         <Play className="mr-2 h-4 w-4" />
         Start Exam

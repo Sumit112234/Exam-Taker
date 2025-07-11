@@ -7,13 +7,13 @@ import { useAuth } from "@/contexts/AuthContext"
 export default function DashboardLayout({ children }) {
   const { user, loading } = useAuth()
   return (
-    <div className="flex min-h-screen flex-col">
-      <header className="sticky top-0 z-10 border-b bg-background">
+    <div className="flex min-h-screen flex-col  mx-auto  w-fit px-5 ">
+      <header className="sticky top-0 z-10 border-b bg-background rounded-lg shadow-sm">
         <div className="container flex h-16 items-center justify-between">
           <div className="flex items-center gap-2">
-            <h1 className="text-xl font-bold">ExamPro</h1>
+            <h1 className="text-xl font-bold mx-2">ExamPro</h1>
           </div>
-          {user?.role == 'admin' ? <AdminNav/> : <UserNav />}
+          <UserNav/>
         </div>
       </header>
       <div className="container flex-1 items-start md:grid md:grid-cols-[220px_1fr] md:gap-6 lg:grid-cols-[240px_1fr] lg:gap-10">

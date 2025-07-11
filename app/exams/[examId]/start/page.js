@@ -397,7 +397,7 @@ const startTimer = () => {
           variant: "default",
         })
 
-        // router.push(`/results/${result.resultId}`)
+        router.push(`/results/${result.resultId}`)
       } else {
         const errorData = await response.json()
         throw new Error(errorData.message || "Failed to submit exam")
@@ -436,14 +436,17 @@ const startTimer = () => {
   }
 
   const getQuestionStatus = (sectionIndex, questionIndex) => {
+    // console.log("Getting status for section:", sectionIndex, "question:", questionIndex, answers)
     const questionKey = `${sectionIndex}-${questionIndex}`
     const isAnswered = answers[questionKey] !== undefined
     const isMarked = markedForReview.has(questionKey)
     const isCurrent = sectionIndex === currentSectionIndex && questionIndex === currentQuestionIndex
 
-    if (isCurrent) return "current"
+    // console.log("Question Status - Section:", sectionIndex, "Question:", questionIndex, "Answered:", isAnswered, "Marked:", isMarked, "Current:", isCurrent)
+    
     if (isAnswered && isMarked) return "answered-marked"
     if (isAnswered) return "answered"
+    if (isCurrent) return "current"
     if (isMarked) return "marked"
     return "not-visited"
   }
@@ -480,6 +483,7 @@ const startTimer = () => {
     exam.sections.forEach((section, sectionIndex) => {
       for (let questionIndex = 0; questionIndex < section.questions; questionIndex++) {
         const status = getQuestionStatus(sectionIndex, questionIndex)
+        console.log("getting status for each section and question", sectionIndex, questionIndex, status)
         switch (status) {
           case "answered":
             answered++
@@ -499,6 +503,7 @@ const startTimer = () => {
         }
       }
     })
+    console.log("----------------------------")
 
     return { answered, notAnswered, notVisited, markedForReviewCount, answeredAndMarked }
   }
@@ -526,7 +531,7 @@ const startTimer = () => {
   const stats = getQuestionStats()
 
   return (
-    <div className="flex flex-col h-screen bg-background">
+    <div className="flex flex-col h-screen px-10 bg-background">
       {/* Header */}
       <header className="border-b bg-background p-4 sticky top-0 z-10">
         <div className="flex justify-between items-center">
@@ -687,7 +692,7 @@ const startTimer = () => {
                 <p className="text-sm text-muted-foreground">ID: {user?.id || "N/A"}</p>
               </div>
             </div>
-
+             { console.log(stats)}
             {/* Question Stats */}
             <div className="space-y-3">
               <div className="flex items-center justify-between">
@@ -726,7 +731,7 @@ const startTimer = () => {
                 <span className="font-medium">{stats.answeredAndMarked}</span>
               </div>
             </div>
-
+{/* {console.log(currentQuestion, "currentQuestion", currentSection)} */}
             {/* Current Section */}
             <div>
               <h3 className="font-medium mb-3">{currentSection.name}</h3>

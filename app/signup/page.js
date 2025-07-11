@@ -1,14 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import Link from "next/link"
-import { useRouter } from "next/navigation"
 import { motion, AnimatePresence } from "framer-motion"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Alert, AlertDescription } from "@/components/ui/alert"
 import { 
   BookOpen, 
   AlertCircle, 
@@ -17,17 +10,18 @@ import {
   Lock, 
   CheckCircle, 
   ArrowLeft, 
-  Sparkles, 
-  Star,
   Eye,
   EyeOff,
   Shield,
   Zap,
-  UserPlus
+  UserPlus,
+  GraduationCap,
+  Target,
+  TrendingUp
 } from "lucide-react"
+import { useRouter } from "next/navigation"
 
-export default function Signup() {
-  const router = useRouter()
+export default function ProfessionalSignup() {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -46,49 +40,84 @@ export default function Signup() {
     uppercase: false,
     lowercase: false,
     number: false,
+    special: false,
     match: false
   })
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
 
   useEffect(() => {
     setMounted(true)
-    
-    const handleMouseMove = (e) => {
-      setMousePosition({ x: e.clientX, y: e.clientY })
-    }
-    
-    window.addEventListener('mousemove', handleMouseMove)
-    return () => window.removeEventListener('mousemove', handleMouseMove)
   }, [])
 
   useEffect(() => {
-    // Password strength calculation
     const password = formData.password
     const newValidations = {
       length: password.length >= 8,
       uppercase: /[A-Z]/.test(password),
       lowercase: /[a-z]/.test(password),
       number: /\d/.test(password),
+      special: /[!@#$%^&*(),.?":{}|<>]/.test(password),
       match: formData.password === formData.confirmPassword && formData.confirmPassword !== ""
     }
     
     setValidations(newValidations)
     
-    const strength = Object.values(newValidations).filter(Boolean).length
+    const strength = Object.values(newValidations).slice(0, 5).filter(Boolean).length
     setPasswordStrength(strength)
   }, [formData.password, formData.confirmPassword])
 
   const handleChange = (e) => {
     const { name, value } = e.target
     setFormData((prev) => ({ ...prev, [name]: value }))
+    setError("") // Clear error when user starts typing
   }
+
+  const validateForm = () => {
+    if (!formData.name.trim()) {
+      setError("Full name is required")
+      return false
+    }
+    
+    if (!formData.email.trim()) {
+      setError("Email address is required")
+      return false
+    }
+    
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      setError("Please enter a valid email address")
+      return false
+    }
+    
+    if (formData.password.length < 8) {
+      setError("Password must be at least 8 characters long")
+      return false
+    }
+    
+    if (passwordStrength < 4) {
+      setError("Password must include uppercase, lowercase, number, and special character")
+      return false
+    }
+    
+    if (formData.password !== formData.confirmPassword) {
+      setError("Passwords do not match")
+      return false
+    }
+    
+    return true
+  }
+   const router = useRouter()
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError("")
+    console.log("Form submitted with data:", formData)
 
-    // Basic validation
-    if (formData.password !== formData.confirmPassword) {
+    if (!validateForm()) {
+      return
+    }
+
+    setIsLoading(true)
+
+        if (formData.password !== formData.confirmPassword) {
       setError("Passwords do not match")
       return
     }
@@ -125,6 +154,7 @@ export default function Signup() {
     } finally {
       setIsLoading(false)
     }
+
   }
 
   const getStrengthColor = () => {
@@ -141,9 +171,9 @@ export default function Signup() {
 
   if (!mounted) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-50 to-blue-50">
         <motion.div
-          className="w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full"
+          className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full"
           animate={{ rotate: 360 }}
           transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
         />
@@ -152,166 +182,122 @@ export default function Signup() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative overflow-hidden">
-      {/* Animated Background */}
-      <div className="absolute inset-0">
-        {/* Gradient Orbs */}
-        <motion.div
-          className="absolute top-1/4 left-1/4 w-96 h-96 bg-gradient-to-r from-purple-500/10 to-pink-500/10 rounded-full blur-3xl"
-          animate={{
-            scale: [1, 1.2, 1],
-            rotate: [0, 180, 360],
-          }}
-          transition={{
-            duration: 20,
-            repeat: Infinity,
-            ease: "linear"
-          }}
-        />
-        <motion.div
-          className="absolute top-3/4 right-1/4 w-80 h-80 bg-gradient-to-r from-blue-500/10 to-cyan-500/10 rounded-full blur-3xl"
-          animate={{
-            scale: [1.2, 1, 1.2],
-            rotate: [360, 180, 0],
-          }}
-          transition={{
-            duration: 15,
-            repeat: Infinity,
-            ease: "linear"
-          }}
-        />
-        
-        {/* Floating Particles */}
-        {[...Array(30)].map((_, i) => (
-          <motion.div
-            key={i}
-            className="absolute w-1 h-1 bg-purple-400/30 rounded-full"
-            style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-            }}
-            animate={{
-              y: [0, -100, 0],
-              opacity: [0, 1, 0],
-            }}
-            transition={{
-              duration: 3 + Math.random() * 2,
-              repeat: Infinity,
-              delay: Math.random() * 2,
-            }}
-          />
-        ))}
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 relative">
+      {/* Subtle background pattern */}
+      <div className="absolute inset-0 opacity-5">
+        <div className="absolute inset-0" style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23000000' fill-opacity='0.4'%3E%3Ccircle cx='30' cy='30' r='1'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+        }}/>
       </div>
 
-      {/* Mouse Follower */}
-      <motion.div
-        className="fixed pointer-events-none z-50 w-6 h-6 border border-purple-400/30 rounded-full"
-        animate={{
-          x: mousePosition.x - 12,
-          y: mousePosition.y - 12,
-        }}
-        transition={{
-          type: "spring",
-          stiffness: 500,
-          damping: 28,
-        }}
-      />
-
-      <div className="relative z-10 flex min-h-screen flex-col items-center justify-center p-4">
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="mb-8"
-        >
-          <Link href="/" className="flex items-center gap-3 group">
-            <motion.div
-              whileHover={{ rotate: 15, scale: 1.1 }}
-              transition={{ type: "spring", stiffness: 400, damping: 17 }}
-            >
-              <ArrowLeft className="h-5 w-5 text-purple-400 group-hover:text-purple-300 transition-colors" />
-            </motion.div>
-            
-            <div className="flex items-center gap-3">
-              <motion.div
-                whileHover={{ rotate: 360 }}
-                transition={{ duration: 0.6 }}
-                className="relative"
-              >
-                <BookOpen className="h-8 w-8 text-purple-400" />
+      <div className="relative z-10 flex min-h-screen">
+        {/* Left side - Branding and Features */}
+        <div className="hidden lg:flex lg:w-1/2 flex-col justify-center px-12 xl:px-16">
+          <motion.div
+            initial={{ opacity: 0, x: -50 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.8 }}
+          >
+            {/* Logo and Brand */}
+            <div className="mb-12">
+              <div className="flex items-center gap-3 mb-6">
                 <motion.div
-                  className="absolute -top-1 -right-1 w-3 h-3 bg-gradient-to-r from-pink-500 to-purple-500 rounded-full"
-                  animate={{ scale: [1, 1.2, 1] }}
-                  transition={{ duration: 2, repeat: Infinity }}
-                />
-              </motion.div>
-              
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-                ExamPro
-              </h1>
-            </div>
-          </Link>
-        </motion.div>
-
-        {/* Signup Form */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9, y: 20 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="w-full max-w-md"
-        >
-          <Card className="relative overflow-hidden border-purple-500/20 bg-gradient-to-br from-purple-900/40 to-pink-900/40 backdrop-blur-xl shadow-2xl">
-            {/* Animated background elements */}
-            <div className="absolute inset-0 opacity-30">
-              <motion.div
-                className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-full blur-2xl"
-                animate={{
-                  scale: [1, 1.2, 1],
-                  rotate: [0, 180, 360],
-                }}
-                transition={{
-                  duration: 10,
-                  repeat: Infinity,
-                  ease: "linear"
-                }}
-              />
-              <motion.div
-                className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-full blur-2xl"
-                animate={{
-                  scale: [1.2, 1, 1.2],
-                  rotate: [360, 180, 0],
-                }}
-                transition={{
-                  duration: 12,
-                  repeat: Infinity,
-                  ease: "linear"
-                }}
-              />
+                  whileHover={{ rotate: 360 }}
+                  transition={{ duration: 0.6 }}
+                  className="p-3 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl shadow-lg"
+                >
+                  <BookOpen className="h-8 w-8 text-white" />
+                </motion.div>
+                <h1 className="text-4xl font-bold text-gray-900">ExamPro</h1>
+              </div>
+              <h2 className="text-3xl font-bold text-gray-900 mb-4">
+                Start Your Journey to Exam Success
+              </h2>
+              <p className="text-xl text-gray-600 leading-relaxed">
+                Join thousands of students who trust ExamPro for their exam preparation. 
+                Get access to premium study materials, practice tests, and personalized learning paths.
+              </p>
             </div>
 
-            <CardHeader className="relative text-center pb-6">
+            {/* Features */}
+            <div className="space-y-6">
+              {[
+                {
+                  icon: Target,
+                  title: "Personalized Learning",
+                  description: "AI-powered study plans tailored to your strengths and weaknesses"
+                },
+                {
+                  icon: TrendingUp,
+                  title: "Progress Tracking",
+                  description: "Detailed analytics to monitor your improvement over time"
+                },
+                {
+                  icon: GraduationCap,
+                  title: "Expert Content",
+                  description: "Created by education professionals and subject matter experts"
+                }
+              ].map((feature, index) => (
+                <motion.div
+                  key={feature.title}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3 + index * 0.1 }}
+                  className="flex items-start gap-4"
+                >
+                  <div className="p-2 bg-blue-100 rounded-lg">
+                    <feature.icon className="h-6 w-6 text-blue-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900 mb-1">{feature.title}</h3>
+                    <p className="text-gray-600">{feature.description}</p>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        </div>
+
+        {/* Right side - Signup Form */}
+        <form onSubmit={handleSubmit} className="w-full lg:w-1/2 flex flex-col justify-center px-6 py-12 lg:px-12">
+          <motion.div
+            initial={{ opacity: 0, x: 50 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.8 }}
+            className="w-full max-w-md mx-auto"
+          >
+            {/* Mobile branding */}
+            <div className="lg:hidden mb-8 text-center">
+              <div className="flex items-center justify-center gap-3 mb-4">
+                <div className="p-2 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl">
+                  <BookOpen className="h-6 w-6 text-white" />
+                </div>
+                <h1 className="text-2xl font-bold text-gray-900">ExamPro</h1>
+              </div>
+            </div>
+
+            {/* Form Header */}
+            <div className="mb-8">
               <motion.div
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}
-                className="mb-4"
+                className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-sm font-medium mb-4"
               >
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gradient-to-r from-purple-800/50 to-pink-800/50 border border-purple-500/20">
-                  <UserPlus className="h-3 w-3 text-purple-300" />
-                  <span className="text-xs text-purple-200">Join ExamPro</span>
-                </div>
+                <UserPlus className="h-4 w-4" />
+                Create Account
               </motion.div>
               
-              <CardTitle className="text-3xl font-bold bg-gradient-to-r from-purple-300 to-pink-300 bg-clip-text text-transparent">
-                Create Account
-              </CardTitle>
-              <CardDescription className="text-purple-200 mt-2">
-                Start your journey to exam success
-              </CardDescription>
-            </CardHeader>
+              <h2 className="text-3xl font-bold text-gray-900 mb-2">
+                Join ExamPro Today
+              </h2>
+              <p className="text-gray-600">
+                Create your account and start preparing for success
+              </p>
+            </div>
 
-            <CardContent className="relative space-y-6">
+            {/* Form Card */}
+            <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8">
               <AnimatePresence>
                 {error && (
                   <motion.div
@@ -319,142 +305,130 @@ export default function Signup() {
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: -10, scale: 0.95 }}
                     transition={{ duration: 0.3 }}
+                    className="mb-6"
                   >
-                    <Alert variant="destructive" className="border-red-500/50 bg-red-900/30 backdrop-blur-sm">
-                      <AlertCircle className="h-4 w-4" />
-                      <AlertDescription className="text-red-200">{error}</AlertDescription>
-                    </Alert>
+                    <div className="flex items-center gap-3 p-4 bg-red-50 border border-red-200 rounded-lg">
+                      <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0" />
+                      <p className="text-red-800 text-sm font-medium">{error}</p>
+                    </div>
                   </motion.div>
                 )}
               </AnimatePresence>
 
-              <form onSubmit={handleSubmit} className="space-y-5">
+              <div className="space-y-6">
                 {/* Full Name */}
                 <motion.div
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.3 }}
-                  className="space-y-2"
                 >
-                  <Label htmlFor="name" className="text-purple-200 font-medium flex items-center gap-2">
-                    <User className="h-4 w-4" />
+                  <label htmlFor="name" className="block text-sm font-semibold text-gray-900 mb-2">
                     Full Name
-                  </Label>
+                  </label>
                   <div className="relative">
-                    <Input
+                    <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                    <input
                       id="name"
                       name="name"
-                      placeholder="John Doe"
+                      type="text"
+                      placeholder="Enter your full name"
                       value={formData.name}
                       onChange={handleChange}
                       onFocus={() => setFocusedField('name')}
                       onBlur={() => setFocusedField(null)}
                       required
-                      className="bg-purple-900/30 border-purple-500/30 text-white placeholder:text-purple-300 focus:border-purple-400 focus:ring-purple-400/20 transition-all duration-300"
+                      className={`w-full pl-10 pr-4 py-3 border rounded-lg text-gray-900 placeholder-gray-500 transition-all duration-200 ${
+                        focusedField === 'name' 
+                          ? 'border-blue-500 ring-2 ring-blue-100 shadow-sm' 
+                          : 'border-gray-300 hover:border-gray-400'
+                      }`}
                     />
-                    {focusedField === 'name' && (
-                      <motion.div
-                        initial={{ scale: 0 }}
-                        animate={{ scale: 1 }}
-                        className="absolute -top-1 -right-1 w-3 h-3 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full"
-                      />
-                    )}
                   </div>
                 </motion.div>
 
                 {/* Email */}
                 <motion.div
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.4 }}
-                  className="space-y-2"
                 >
-                  <Label htmlFor="email" className="text-purple-200 font-medium flex items-center gap-2">
-                    <Mail className="h-4 w-4" />
+                  <label htmlFor="email" className="block text-sm font-semibold text-gray-900 mb-2">
                     Email Address
-                  </Label>
+                  </label>
                   <div className="relative">
-                    <Input
+                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                    <input
                       id="email"
                       name="email"
                       type="email"
-                      placeholder="name@example.com"
+                      placeholder="Enter your email address"
                       value={formData.email}
                       onChange={handleChange}
                       onFocus={() => setFocusedField('email')}
                       onBlur={() => setFocusedField(null)}
                       required
-                      className="bg-purple-900/30 border-purple-500/30 text-white placeholder:text-purple-300 focus:border-purple-400 focus:ring-purple-400/20 transition-all duration-300"
+                      className={`w-full pl-10 pr-4 py-3 border rounded-lg text-gray-900 placeholder-gray-500 transition-all duration-200 ${
+                        focusedField === 'email' 
+                          ? 'border-blue-500 ring-2 ring-blue-100 shadow-sm' 
+                          : 'border-gray-300 hover:border-gray-400'
+                      }`}
                     />
-                    {focusedField === 'email' && (
-                      <motion.div
-                        initial={{ scale: 0 }}
-                        animate={{ scale: 1 }}
-                        className="absolute -top-1 -right-1 w-3 h-3 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full"
-                      />
-                    )}
                   </div>
                 </motion.div>
 
                 {/* Password */}
                 <motion.div
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.5 }}
-                  className="space-y-2"
                 >
-                  <Label htmlFor="password" className="text-purple-200 font-medium flex items-center gap-2">
-                    <Lock className="h-4 w-4" />
+                  <label htmlFor="password" className="block text-sm font-semibold text-gray-900 mb-2">
                     Password
-                  </Label>
+                  </label>
                   <div className="relative">
-                    <Input
+                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                    <input
                       id="password"
                       name="password"
                       type={showPassword ? "text" : "password"}
+                      placeholder="Create a strong password"
                       value={formData.password}
                       onChange={handleChange}
                       onFocus={() => setFocusedField('password')}
                       onBlur={() => setFocusedField(null)}
                       required
-                      className="bg-purple-900/30 border-purple-500/30 text-white placeholder:text-purple-300 focus:border-purple-400 focus:ring-purple-400/20 pr-12 transition-all duration-300"
+                      className={`w-full pl-10 pr-12 py-3 border rounded-lg text-gray-900 placeholder-gray-500 transition-all duration-200 ${
+                        focusedField === 'password' 
+                          ? 'border-blue-500 ring-2 ring-blue-100 shadow-sm' 
+                          : 'border-gray-300 hover:border-gray-400'
+                      }`}
                     />
-                    <Button
+                    <button
                       type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-purple-800/30 text-purple-300 hover:text-purple-200"
                       onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
                     >
-                      {showPassword ? (
-                        <EyeOff className="h-4 w-4" />
-                      ) : (
-                        <Eye className="h-4 w-4" />
-                      )}
-                    </Button>
-                    {focusedField === 'password' && (
-                      <motion.div
-                        initial={{ scale: 0 }}
-                        animate={{ scale: 1 }}
-                        className="absolute -top-1 -right-12 w-3 h-3 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full"
-                      />
-                    )}
+                      {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                    </button>
                   </div>
                   
-                  {/* Password Strength Indicator */}
+                  {/* Password Requirements */}
                   {formData.password && (
                     <motion.div
                       initial={{ opacity: 0, height: 0 }}
                       animate={{ opacity: 1, height: "auto" }}
-                      className="space-y-2"
+                      className="mt-3 space-y-2"
                     >
                       <div className="flex items-center justify-between">
-                        <span className="text-xs text-purple-300">Password Strength</span>
-                        <span className={`text-xs font-medium bg-gradient-to-r ${getStrengthColor()} bg-clip-text text-transparent`}>
+                        <span className="text-sm font-medium text-gray-700">Password Strength</span>
+                        <span className={`text-sm font-semibold ${
+                          passwordStrength <= 2 ? 'text-red-600' : 
+                          passwordStrength <= 3 ? 'text-yellow-600' : 'text-green-600'
+                        }`}>
                           {getStrengthText()}
                         </span>
                       </div>
-                      <div className="w-full h-1.5 bg-purple-900/50 rounded-full overflow-hidden">
+                      <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
                         <motion.div
                           className={`h-full bg-gradient-to-r ${getStrengthColor()} rounded-full`}
                           initial={{ width: 0 }}
@@ -462,127 +436,153 @@ export default function Signup() {
                           transition={{ duration: 0.3 }}
                         />
                       </div>
+                      <div className="grid grid-cols-2 gap-2 text-xs">
+                        {[
+                          { key: 'length', label: '8+ characters' },
+                          { key: 'uppercase', label: 'Uppercase letter' },
+                          { key: 'lowercase', label: 'Lowercase letter' },
+                          { key: 'number', label: 'Number' },
+                          { key: 'special', label: 'Special character' }
+                        ].map((req) => (
+                          <div key={req.key} className="flex items-center gap-1">
+                            {validations[req.key] ? (
+                              <CheckCircle className="h-3 w-3 text-green-500" />
+                            ) : (
+                              <div className="h-3 w-3 border border-gray-300 rounded-full" />
+                            )}
+                            <span className={validations[req.key] ? 'text-green-600' : 'text-gray-500'}>
+                              {req.label}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
                     </motion.div>
                   )}
                 </motion.div>
 
                 {/* Confirm Password */}
                 <motion.div
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.6 }}
-                  className="space-y-2"
                 >
-                  <Label htmlFor="confirmPassword" className="text-purple-200 font-medium flex items-center gap-2">
-                    <Shield className="h-4 w-4" />
+                  <label htmlFor="confirmPassword" className="block text-sm font-semibold text-gray-900 mb-2">
                     Confirm Password
-                  </Label>
+                  </label>
                   <div className="relative">
-                    <Input
+                    <Shield className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                    <input
                       id="confirmPassword"
                       name="confirmPassword"
                       type={showConfirmPassword ? "text" : "password"}
+                      placeholder="Confirm your password"
                       value={formData.confirmPassword}
                       onChange={handleChange}
                       onFocus={() => setFocusedField('confirmPassword')}
                       onBlur={() => setFocusedField(null)}
                       required
-                      className="bg-purple-900/30 border-purple-500/30 text-white placeholder:text-purple-300 focus:border-purple-400 focus:ring-purple-400/20 pr-12 transition-all duration-300"
+                      className={`w-full pl-10 pr-12 py-3 border rounded-lg text-gray-900 placeholder-gray-500 transition-all duration-200 ${
+                        focusedField === 'confirmPassword' 
+                          ? 'border-blue-500 ring-2 ring-blue-100 shadow-sm' 
+                          : 'border-gray-300 hover:border-gray-400'
+                      }`}
                     />
-                    <Button
+                    <button
                       type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-purple-800/30 text-purple-300 hover:text-purple-200"
                       onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
                     >
-                      {showConfirmPassword ? (
-                        <EyeOff className="h-4 w-4" />
-                      ) : (
-                        <Eye className="h-4 w-4" />
-                      )}
-                    </Button>
-                    {focusedField === 'confirmPassword' && (
-                      <motion.div
-                        initial={{ scale: 0 }}
-                        animate={{ scale: 1 }}
-                        className="absolute -top-1 -right-12 w-3 h-3 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full"
-                      />
-                    )}
+                      {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                    </button>
                   </div>
                   
-                  {/* Password Match Indicator */}
+                  {/* Password Match Status */}
                   {formData.confirmPassword && (
                     <motion.div
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
-                      className="flex items-center gap-2 text-xs"
+                      className="mt-2 flex items-center gap-2"
                     >
                       {validations.match ? (
                         <>
-                          <CheckCircle className="h-3 w-3 text-green-400" />
-                          <span className="text-green-400">Passwords match</span>
+                          <CheckCircle className="h-4 w-4 text-green-500" />
+                          <span className="text-sm text-green-600 font-medium">Passwords match</span>
                         </>
                       ) : (
                         <>
-                          <AlertCircle className="h-3 w-3 text-red-400" />
-                          <span className="text-red-400">Passwords don't match</span>
+                          <AlertCircle className="h-4 w-4 text-red-500" />
+                          <span className="text-sm text-red-600 font-medium">Passwords don't match</span>
                         </>
                       )}
                     </motion.div>
                   )}
                 </motion.div>
 
+                {/* Submit Button */}
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.7 }}
+                  className="pt-4"
                 >
-                  <Button 
-                    type="submit" 
-                    className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold py-3 shadow-lg hover:shadow-purple-500/25 transition-all duration-300 border-0" 
+                  <button
+                    type="submit"
                     disabled={isLoading}
+                    className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 disabled:from-gray-400 disabled:to-gray-500 text-white font-semibold py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center gap-2"
                   >
                     {isLoading ? (
-                      <motion.div 
-                        className="flex items-center gap-2"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                      >
+                      <>
                         <motion.div
-                          className="w-4 h-4 border-2 border-white border-t-transparent rounded-full"
+                          className="w-5 h-5 border-2 border-white border-t-transparent rounded-full"
                           animate={{ rotate: 360 }}
                           transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
                         />
-                        Creating account...
-                      </motion.div>
+                        Creating Account...
+                      </>
                     ) : (
-                      <span className="flex items-center gap-2">
-                        <Zap className="h-4 w-4" />
+                      <>
+                        <Zap className="h-5 w-5" />
                         Create Account
-                      </span>
+                      </>
                     )}
-                  </Button>
+                  </button>
                 </motion.div>
-              </form>
-            </CardContent>
 
-            <CardFooter className="relative flex justify-center pt-6">
-              <motion.p 
+              {/* Sign In Link */}
+              <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.8 }}
-                className="text-sm text-purple-300"
+                className="mt-6 text-center"
               >
-                Already have an account?{" "}
-                <Link href="/login" className="text-purple-200 hover:text-white font-medium hover:underline transition-colors">
-                  Sign in
-                </Link>
-              </motion.p>
-            </CardFooter>
-          </Card>
+                <p className="text-gray-600">
+                  Already have an account?{" "}
+                  <a href="/login" className="text-blue-600 hover:text-blue-700 font-semibold hover:underline transition-colors">
+                    Sign in
+                  </a>
+                </p>
+              </motion.div>
+            </div>
+
+            {/* Terms */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.9 }}
+              className="mt-6 text-center"
+            >
+              <p className="text-xs text-gray-500">
+                By creating an account, you agree to our{" "}
+                <a href="/terms" className="text-blue-600 hover:underline">Terms of Service</a>
+                {" "}and{" "}
+                <a href="/privacy" className="text-blue-600 hover:underline">Privacy Policy</a>
+              </p>
+            </motion.div>
+          </div>
         </motion.div>
-      </div>
+        
+      </form>
+    </div>
     </div>
   )
 }

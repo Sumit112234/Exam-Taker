@@ -62,7 +62,7 @@ export async function POST(request) {
 
     response.cookies.set("accessToken", accessToken, {
       ...cookieOptions,
-      maxAge: 15 * 60 * 60 * 60, // 15 minutes
+      maxAge: 15 * 60 * 60 * 60*60, // 15 minutes
     })
 
     response.cookies.set("refreshToken", refreshToken, {

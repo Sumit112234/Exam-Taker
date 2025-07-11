@@ -58,6 +58,7 @@ export async function POST(request) {
 
     const testData = await request.json()
 
+    console.log("Test data received:", testData)
     const test = new Test({
       ...testData,
       createdBy: currentUser.userId,

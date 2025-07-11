@@ -20,16 +20,19 @@ export async function POST(request) {
     })
 
     if (!coupon) {
-      return NextResponse.json({ message: "Invalid or expired coupon" }, { status: 404 })
+      return NextResponse.json({ message: "Invalid or expired coupon code" }, { status: 404 })
     }
 
     return NextResponse.json({
       valid: true,
-      discount: coupon.discount,
       code: coupon.code,
+      discount: coupon.discount,
+      discountType: coupon.discountType,
+      description: coupon.description,
+      remainingUses: coupon.maxUses - coupon.usedCount,
     })
   } catch (error) {
-    console.error("Validate coupon error:", error)
+    console.error("Coupon validation error:", error)
     return NextResponse.json({ message: "Internal server error" }, { status: 500 })
   }
 }

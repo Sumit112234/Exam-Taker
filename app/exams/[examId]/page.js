@@ -38,7 +38,7 @@ export default function ExamDetails({ params }) {
         setExam(data)
 
         // Check if user can attempt this exam
-        if (!data.isFree && !user?.subscription?.status) {
+        if (!data.visibility.isFree && !user?.subscription?.status) {
           setCanAttempt(false)
         }
       } else {
@@ -81,7 +81,7 @@ export default function ExamDetails({ params }) {
       router.push("/subscriptions")
       return
     }
-    router.push(`/exams/${examId}/start`)
+    router.push(`/exams/${examId}/instructions`)
   }
 
   const getBestScore = () => {
@@ -114,7 +114,7 @@ export default function ExamDetails({ params }) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100 dark:from-blue-950 dark:via-gray-900 dark:to-blue-900">
+    <div className="min-h-screen px-10 bg-gradient-to-br from-blue-50 via-white to-blue-100 dark:from-blue-950 dark:via-gray-900 dark:to-blue-900">
       <div className="container py-6">
         {/* Header */}
         <div className="flex items-center gap-4 mb-6">
