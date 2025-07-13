@@ -3,6 +3,7 @@ import connectDB from "@/lib/mongodb"
 import Question from "@/models/Question"
 import Exam from "@/models/Exam"
 import { getCurrentUser } from "@/lib/auth"
+import User from '@/models/User'
 
 export async function POST(request) {
   try {
