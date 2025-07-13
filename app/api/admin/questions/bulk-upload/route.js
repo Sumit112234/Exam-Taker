@@ -4,6 +4,7 @@ import Question from "@/models/Question"
 import Exam from "@/models/Exam"
 import { getCurrentUser } from "@/lib/auth"
 import User from '@/models/User'
+import Category from "@/models/Category"
 
 export async function POST(request) {
   try {
