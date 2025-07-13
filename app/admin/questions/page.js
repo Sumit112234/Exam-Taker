@@ -80,6 +80,8 @@ export default function QuestionsManagement() {
     sectionName: "",
     questions: "",
     file: null,
+    totalQuestions : 0,
+    uploadedQuestions: 0
   })
 
   useEffect(() => {
@@ -507,11 +509,39 @@ export default function QuestionsManagement() {
                             <SelectValue placeholder="Select exam" />
                           </SelectTrigger>
                           <SelectContent>
-                            {availableExams.map((exam) => (
-                              <SelectItem key={exam._id} value={exam._id}>
-                                {exam.title}
-                              </SelectItem>
-                            ))}
+                            {console.log("Available exams:", availableExams)}
+{availableExams.map((exam) => {
+  const totalQuestions = exam.sections?.reduce((sum, sec) => sum + (sec.questions || 0), 0)
+  const uploadedQuestions = exam.sections?.reduce((sum, sec) => sum + (sec.questionIds?.length || 0), 0)
+
+  const isAllUploaded = uploadedQuestions === totalQuestions && totalQuestions > 0
+  const isNoneUploaded = uploadedQuestions === 0
+  const isPartiallyUploaded = uploadedQuestions > 0 && uploadedQuestions < totalQuestions
+
+  return (
+    <SelectItem key={exam._id} value={exam._id}>
+      <div className="flex items-center justify-between w-full gap-6 px-2 py-1">
+        {/* Title + Subject */}
+        <div className="flex flex-col">
+          <p className="font-medium text-sm">{exam.title}</p>
+          {/* <p className="text-xs text-muted-foreground">({exam.subject})</p> */}
+        </div>
+
+        {/* Question count or status */}
+        <div className="flex items-center gap-2">
+          {isPartiallyUploaded && (
+            <span className="text-sm font-medium text-gray-600">
+              {uploadedQuestions}/{totalQuestions}
+            </span>
+          )}
+          {isAllUploaded && <span className="w-3 h-3 rounded-full bg-green-500"></span>}
+          {isNoneUploaded && <span className="w-3 h-3 rounded-full bg-red-500"></span>}
+        </div>
+      </div>
+    </SelectItem>
+  )
+})}
+
                           </SelectContent>
                         </Select>
                       </div>
@@ -521,11 +551,14 @@ export default function QuestionsManagement() {
                         <Select
                           value={bulkUploadData.sectionId}
                           onValueChange={(value) => {
+                            // console.log("Selected section value:", value, availableSections)
                             const selectedSection = availableSections.find((section) => section.sectionId === value)
                             setBulkUploadData({
                               ...bulkUploadData,
                               sectionId: value,
                               sectionName: selectedSection?.name || "",
+                              totalQuestions: selectedSection?.questions || 0,
+                              uploadedQuestions: selectedSection?.questionIds?.length || 0,
                             })
                           }}
                           disabled={!bulkUploadData.examId}
@@ -558,6 +591,15 @@ export default function QuestionsManagement() {
                           <p>
                             <strong>Section:</strong> {bulkUploadData.sectionName}
                           </p>
+                        
+                          <p>
+                            <strong>Total Questions:</strong> {bulkUploadData.totalQuestions}
+                          </p>
+                        
+                          <p>
+                            <strong>Uploaded Questions:</strong> {bulkUploadData.uploadedQuestions}
+                          </p>
+                        
                         </div>
                       </div>
                     )}
