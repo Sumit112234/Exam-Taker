@@ -22,6 +22,16 @@ export async function POST(request) {
     const file = formData.get("file")
     const questionsText = formData.get("questions")
 
+    console.log("Bulk upload request received:", {
+      category,
+      examId,
+      sectionId,
+      examName,
+      sectionName,
+      file: file ? file.name : "No file uploaded",
+      questionsText: questionsText ? "Provided" : "Not provided",
+    })
+
     // Validate required fields
     if (!category || !examId || !sectionId) {
       return NextResponse.json({ message: "Category, exam, and section are required" }, { status: 400 })
