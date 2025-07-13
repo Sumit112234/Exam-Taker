@@ -82,13 +82,13 @@ const userSchema = new mongoose.Schema(
 )
 
 // Virtual for average score
-userSchema.virtual("averageScore").get(function () {
-  return this.examsTaken > 0 ? Math.round(this.totalScore / this.examsTaken) : 0
-})
+// userSchema.virtual("averageScore").get(function () {
+//   return this.examsTaken > 0 ? Math.round(this.totalScore / this.examsTaken) : 0
+// })
 
 // Index for better performance
 userSchema.index({ email: 1 })
-userSchema.index({ "subscription.status": 1 })
+userSchema.index({ "subscription.status": 2 })
 
 userSchema.pre("save", async function (next) {
   if (!this.isModified("password")) return next()
