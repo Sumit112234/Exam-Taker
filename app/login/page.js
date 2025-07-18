@@ -496,7 +496,7 @@ const ModernLoginForm = () => {
             <p className="text-gray-600">
               Don't have an account?{' '}
               <motion.a
-                href="#"
+                href="/signup"
                 className="text-purple-600 hover:text-purple-800 font-semibold transition-colors"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
