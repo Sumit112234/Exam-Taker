@@ -18,7 +18,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
-         <GoogleOAuthProvider clientId={process.env.VITE_GOOGLE_CLIENT_ID}>
+         <GoogleOAuthProvider clientId={process.env.CLIENT_ID}>
 
          
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
