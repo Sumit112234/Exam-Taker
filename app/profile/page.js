@@ -11,8 +11,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
-import { Calendar, Award, BookOpen, Clock, CheckCircle, AlertCircle } from "lucide-react"
+import { Calendar, Award, BookOpen, Clock, CheckCircle, AlertCircle, ArrowLeft } from "lucide-react"
 import { useAuth } from "@/contexts/AuthContext"
+import { useRouter } from "next/navigation"
 
 export default function Profile() {
   const { user, checkAuth } = useAuth()
@@ -155,9 +156,13 @@ export default function Profile() {
       </div>
     )
   }
+  const router = useRouter()
 
   return (
     <div className="space-y-6 px-10 py-6">
+      <Button variant="outline" className="ml-4" size="icon" onClick={() => router.back()}>
+            <ArrowLeft className="h-4 w-4 " />
+          </Button>
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Profile</h1>
         <p className="text-muted-foreground">Manage your account settings and preferences</p>

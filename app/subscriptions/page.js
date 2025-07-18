@@ -7,8 +7,10 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Check, Star, AlertCircle } from "lucide-react"
+import { Check, Star, AlertCircle, ArrowLeft } from "lucide-react"
 import { loadStripe } from "@stripe/stripe-js"
+import { useRouter } from "next/navigation"
+
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY)
 
@@ -19,6 +21,7 @@ export default function Subscriptions() {
   const [couponError, setCouponError] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [mounted, setMounted] = useState(false)
+  const router = useRouter()
 
   useEffect(() => {
     setMounted(true)
@@ -29,7 +32,8 @@ export default function Subscriptions() {
     try {
       const response = await fetch("/api/subscriptions")
       const data = await response.json()
-      setSubscriptions(data)
+      // console.log("Fetched subscriptions:", data)
+      setSubscriptions(data?.subscriptions || [])
     } catch (error) {
       console.error("Error fetching subscriptions:", error)
     }
@@ -104,8 +108,12 @@ export default function Subscriptions() {
     return null
   }
 
+
   return (
     <div className="container py-6">
+                <Button variant="outline" className="ml-4" size="icon" onClick={() => router.back()}>
+            <ArrowLeft className="h-4 w-4 " />
+          </Button>
       <div className="mb-8 text-center">
         <h1 className="text-3xl font-bold tracking-tight">Choose Your Plan</h1>
         <p className="text-muted-foreground mt-2">Unlock premium features and take unlimited exams</p>
@@ -382,7 +390,7 @@ export default function Subscriptions() {
 //     } catch (error) {
 //       setAppliedCoupon(null)
 //       toast({
-//         title: "Error",
+//         title: "X",
 //         description: error.message || "Failed to apply coupon",
 //         variant: "destructive",
 //       })

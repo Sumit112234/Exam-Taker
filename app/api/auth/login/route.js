@@ -62,13 +62,15 @@ export async function POST(request) {
 
     response.cookies.set("accessToken", accessToken, {
       ...cookieOptions,
-      maxAge: 15 * 60 * 60 * 60*60, // 15 minutes
+      maxAge: 15 * 60 * 60 , // 15 minutes
     })
 
+    console.log("setting cookies for signup refresh token", response.cookies.get("accessToken"))
     response.cookies.set("refreshToken", refreshToken, {
       ...cookieOptions,
       maxAge: 7 * 24 * 60 * 60, // 7 days
     })
+console.log("setting cookies for signup refresh token", response.cookies.get("refreshToken"))
 
     return response
   } catch (error) {

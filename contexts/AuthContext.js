@@ -19,6 +19,8 @@ export function AuthProvider({ children }) {
       const response = await fetch("/api/auth/me", {
         credentials: "include",
       })
+      // let data = await response.json()
+      // console.log("Auth check response:", data)
 
       if (response.ok) {
         const userData = await response.json()
@@ -64,17 +66,17 @@ export function AuthProvider({ children }) {
     }
   }
 
-  const signup = async (name, email, password) => {
+  const signup = async (name, email, password , google, avatar, isVerified) => {
     try {
       const response = await fetch("/api/auth/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password }),
+        body: JSON.stringify({ name, email, password, avatar, isVerified, google }),
         credentials: "include",
       })
 
       const data = await response.json()
-
+      console.log("Signup response:", data, response)
       if (response.ok) {
         setUser(data.user)
         router.push("/dashboard")

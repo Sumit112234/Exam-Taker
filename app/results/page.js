@@ -22,6 +22,7 @@ import {
   Award,
   Target,
   RefreshCw,
+  ArrowLeft,
 } from "lucide-react"
 import { useAuth } from "@/contexts/AuthContext"
 import { useToast } from "@/hooks/use-toast"
@@ -195,6 +196,9 @@ export default function ResultsPage() {
     <div className="space-y-6 px-10 py-6">
       <div className="flex justify-between items-center">
         <div>
+          <Button variant="outline" className="ml-4" size="icon" onClick={() => router.back()}>
+            <ArrowLeft className="h-4 w-4 " />
+          </Button>
           <h1 className="text-3xl font-bold tracking-tight">Exam Results</h1>
           <p className="text-muted-foreground">View and analyze your exam performance</p>
         </div>

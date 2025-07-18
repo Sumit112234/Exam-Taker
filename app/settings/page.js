@@ -10,9 +10,10 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Separator } from "@/components/ui/separator"
 import { Badge } from "@/components/ui/badge"
-import { Bell, Moon, Sun, Globe, Shield, Download, Trash2, CheckCircle, AlertCircle, SettingsIcon } from "lucide-react"
+import { Bell, Moon, Sun, Globe, Shield, Download, Trash2, CheckCircle, AlertCircle, SettingsIcon, ArrowLeft } from "lucide-react"
 import { useAuth } from "@/contexts/AuthContext"
 import { useTheme } from "next-themes"
+import { useRouter } from "next/navigation"
 
 export default function Settings() {
   const { user } = useAuth()
@@ -146,10 +147,14 @@ export default function Settings() {
       </div>
     )
   }
+  const router = useRouter()
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 px-8">
       <div>
+        <Button variant="outline" className="" size="icon" onClick={() => router.back()}>
+            <ArrowLeft className="h-4 w-4 " />
+          </Button>
         <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
           <SettingsIcon className="h-8 w-8" />
           Settings

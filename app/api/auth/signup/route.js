@@ -2,15 +2,16 @@ import { NextResponse } from "next/server"
 import connectDB from "@/lib/mongodb"
 import User from "@/models/User"
 import { generateTokens } from "@/lib/auth"
+import { handleLogin } from "@/app/api/lib/handlelogin"
 
 export async function POST(request) {
   try {
     await connectDB()
 
-    const { name, email, password } = await request.json()
+    const { name, email, password,avatar, isVerified, google } = await request.json()
 
     // Validation
-    if (!name || !email || !password) {
+    if (!google && (!name || !email || !password)) {
       return NextResponse.json({ message: "All fields are required" }, { status: 400 })
     }
 
@@ -18,7 +19,7 @@ export async function POST(request) {
       return NextResponse.json({ message: "Name must be at least 2 characters" }, { status: 400 })
     }
 
-    if (password.length < 6) {
+    if ((password.length < 6) && !google) {
       return NextResponse.json({ message: "Password must be at least 6 characters" }, { status: 400 })
     }
 
@@ -29,22 +30,46 @@ export async function POST(request) {
     }
 
     // Check if user already exists
-    const existingUser = await User.findOne({ email: email.toLowerCase() })
-    if (existingUser) {
+    const existingUser =  await User.findOne({ email: email.toLowerCase() })
+    if (existingUser && !google) {
       return NextResponse.json({ message: "An account with this email already exists" }, { status: 400 })
     }
+    let user = {};
 
     // Create user
-    const user = new User({
-      name: name.trim(),
-      email: email.toLowerCase().trim(),
-      password,
-    })
 
-    await user.save()
+    if(existingUser)
+    {
+      // If signing up with Google, update the existing user
+      existingUser.name = name.trim()
+      existingUser.avatar = avatar
+      existingUser.isVerified = isVerified
+      existingUser.google = true
 
+      await existingUser.save()
+      // return handleLogin(existingUser)
+    }
+    else{
+
+       user = new User({
+        name: name.trim(),
+        email: email.toLowerCase().trim(),
+        password,
+        avatar,
+        isVerified,
+        google
+      })
+      
+      await user.save()
+    }
+
+    if(existingUser && existingUser.google) {
+      user = existingUser;
+    }
+      
     // Generate tokens
-    const { accessToken, refreshToken } = generateTokens(user)
+    const { accessToken, refreshToken } = await generateTokens(user)
+
 
     // Create response
     const response = NextResponse.json({
@@ -70,16 +95,22 @@ export async function POST(request) {
       path: "/",
     }
 
+    console.log("setting cookies for signup")
+
     response.cookies.set("accessToken", accessToken, {
       ...cookieOptions,
-      maxAge: 15 * 60, // 15 minutes
+      maxAge: 15 * 60 * 60, // 15 minutes
     })
 
+    console.log("setting cookies for signup refresh token", response.cookies.get("accessToken"))
+    
     response.cookies.set("refreshToken", refreshToken, {
       ...cookieOptions,
       maxAge: 7 * 24 * 60 * 60, // 7 days
     })
-
+    
+    console.log("setting cookies for signup refresh token", response.cookies.get("refreshToken"))
+    
     return response
   } catch (error) {
     console.error("Signup error:", error)

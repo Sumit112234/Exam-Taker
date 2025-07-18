@@ -250,7 +250,7 @@ export default function QuestionBank() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 px-8">
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Question Bank</h1>

@@ -228,7 +228,7 @@ export default function SubscriptionsManagement() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 px-8">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Subscriptions Management</h1>
         <p className="text-muted-foreground">Manage subscription plans, pricing, and coupons</p>

@@ -3,6 +3,8 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Eye, EyeOff, Mail, Lock, User, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { GoogleLogin } from "@react-oauth/google"
+import Router from 'next/router';
 
 const ModernLoginForm = () => {
   const [formData, setFormData] = useState({
@@ -15,7 +17,7 @@ const ModernLoginForm = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-  const { login } = useAuth();
+  const { login , signup } = useAuth();
 
 
   // Mouse tracking for background gradient effect
@@ -46,20 +48,64 @@ const ModernLoginForm = () => {
   };
 
   const handleSubmitGoogle = async (credentialResponse) => {
-    // setIsLoading(true);
+    setIsLoading(true);
     console.log("GoogleAuthButton rendered ");
 
       const tokenId = credentialResponse?.credential;
-      console.log("Extracted Google Token ID:", tokenId);
+      
 
       if (!tokenId) {
         console.error("No tokenId found in credentialResponse");
         return;
       }
-    // try {
-      // Simulate Google login
-      let result = await login('')
-  // }
+     try {
+     // Simulate Google login
+      let data  = await fetch(`https://www.googleapis.com/oauth2/v3/tokeninfo?id_token=${tokenId}`)
+      data = await data.json();
+      // console.log(data)
+      const { email, name, picture, email_verified } = data
+      // console.log(email, name , picture, email_verified)
+      try {
+
+        const result = await signup(name, email, "google-auth-password",true,  picture, email_verified);
+
+        console.log("Signup result:", result);
+      
+      
+        // const response = await fetch("/api/auth/signup", {
+      //   method: "POST",
+      //   headers: { "Content-Type": "application/json" },
+      //   body: JSON.stringify({
+      //     name,
+      //     email ,
+      //     avatar : picture,
+      //     password: "google-auth-password",
+      //     isVerified: email_verified,
+      //   }),
+      //   credentials: "include"
+      // })
+
+      // const data = await response.json()
+
+      // if (!response.ok) {
+      //   throw new Error(data.message || "Signup failed")
+      // }
+
+      // // Redirect to dashboard after successful signup
+      // router.push("/dashboard")
+      // router.refresh()
+    } catch (err) {
+      console.error("Signup failed:", err)
+    }
+
+      setIsLoading(false)
+     }
+     catch (error) {
+      console.error("Google login failed", error);
+      setErrors({ email: 'Google login failed. Please try again.' });
+      setIsLoading(false);
+      return;
+     }
 }
 
   // Handle input changes
@@ -426,7 +472,7 @@ const ModernLoginForm = () => {
             </motion.button>
 
             {/* Google OAuth Button */}
-            <motion.button
+            <GoogleLogin
               type="button"
               variants={buttonVariants}
               initial="idle"
@@ -442,7 +488,7 @@ const ModernLoginForm = () => {
                 <path fill="#ea4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
               </svg>
               <span>Continue with Google</span>
-            </motion.button>
+            </GoogleLogin>
           </div>
 
           {/* Sign Up Link */}

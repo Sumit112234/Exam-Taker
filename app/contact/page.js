@@ -7,8 +7,9 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Mail, Phone, MapPin, Clock, CheckCircle, AlertCircle } from "lucide-react"
+import { Mail, Phone, MapPin, Clock, CheckCircle, AlertCircle, ArrowLeft } from "lucide-react"
 import { useAuth } from "@/contexts/AuthContext"
+import { useRouter } from "next/navigation"
 
 export default function Contact() {
   const { user } = useAuth()
@@ -75,10 +76,14 @@ export default function Contact() {
   if (!mounted) {
     return null
   }
+  const router = useRouter()
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100 dark:from-blue-950 dark:via-gray-900 dark:to-blue-900">
       <div className="container py-12">
+        <Button variant="outline" className="ml-4" size="icon" onClick={() => router.back()}>
+            <ArrowLeft className="h-4 w-4 " />
+          </Button>
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold tracking-tight mb-4">Contact Us</h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">

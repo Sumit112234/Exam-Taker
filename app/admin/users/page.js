@@ -152,7 +152,7 @@ export default function UsersManagement() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 px-8">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Users Management</h1>
         <p className="text-muted-foreground">Manage and monitor all users in the system</p>

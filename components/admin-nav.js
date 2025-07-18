@@ -44,11 +44,6 @@ const items = [
     icon: Database,
   },
   {
-    title: "Tests",
-    href: "/admin/tests",
-    icon: BookMarked,
-  },
-  {
     title: "Users",
     href: "/admin/users",
     icon: Users,
