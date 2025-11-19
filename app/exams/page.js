@@ -8,8 +8,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Clock, Search, BookOpen, Users, Award, Play, Eye, Lock } from "lucide-react"
+import { Clock, Search, BookOpen, Users, Award, Play, Eye, Lock, ArrowLeft, SettingsIcon } from "lucide-react"
 import { useAuth } from "@/contexts/AuthContext"
+import { useRouter } from "next/navigation"
 
 
 // need to fetch result with resultId and exam id.
@@ -141,8 +142,19 @@ export default function ExamsPage() {
     )
   }
 
+   const router = useRouter()
+
   return (
     <div className="min-h-screen mx-10 bg-gradient-to-br from-blue-50 via-white to-blue-100 dark:from-blue-950 dark:via-gray-900 dark:to-blue-900">
+
+           <div className="pt-5">
+        <Button variant="outline" className="" size="icon" onClick={() => router.push('/dashboard')}>
+            <ArrowLeft className="h-4 w-4 " />
+          </Button>
+       
+      
+      </div>
+
       <div className="container py-6">
         <div className="mb-6">
           <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">

@@ -3,6 +3,7 @@ import connectDB from "@/lib/mongodb"
 import Result from "@/models/Result"
 import Question from "@/models/Question"
 import { getCurrentUser } from "@/lib/auth"
+import User from '@/models/User'
 
 export async function GET(request, { params }) {
   try {

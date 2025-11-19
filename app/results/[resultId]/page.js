@@ -85,7 +85,7 @@ export default function ResultsPage({ params }) {
     <div className="container py-6 px-10 w-full">
       {/* Header with back button */}
       <div className="flex items-center gap-4 mb-6">
-        <Button variant="outline" size="icon" onClick={() => router.back()}>
+        <Button variant="outline" size="icon" onClick={() => router.push('/exams')}>
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <div>

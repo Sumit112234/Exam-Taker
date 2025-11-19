@@ -17,7 +17,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { Clock, Maximize, User, Pause, Play, FileText, AlertCircle, Flag } from "lucide-react"
+import { Clock, Maximize, User, Pause, Play, FileText, AlertCircle, Flag,Loader2 } from "lucide-react"
 import { useAuth } from "@/contexts/AuthContext"
 import { useToast } from "@/hooks/use-toast"
 
@@ -43,6 +43,7 @@ export default function TakeExam({ params }) {
   const [isLoading, setIsLoading] = useState(true)
   const [autoSaveStatus, setAutoSaveStatus] = useState("")
   const [questionMap, setQuestionMap] = useState({}) // Maps section-question index to actual question object
+  const [submitLoading, setSubmitLoading] = useState(false) // Maps section-question index to actual question object
 
   const timerRef = useRef(null)
   const sectionTimerRef = useRef(null)
@@ -357,6 +358,7 @@ const startTimer = () => {
     hasSubmittedRef.current = true
 
     try {
+      setSubmitLoading(true)
       // Prepare submission data
       const submissionData = {
         answers: {},
@@ -396,9 +398,11 @@ const startTimer = () => {
           description: "Your exam has been submitted successfully.",
           variant: "default",
         })
+        setSubmitLoading(true)
 
         router.push(`/results/${result.resultId}`)
       } else {
+        setSubmitLoading(true)
         const errorData = await response.json()
         throw new Error(errorData.message || "Failed to submit exam")
       }
@@ -409,6 +413,7 @@ const startTimer = () => {
         description: error.message || "Failed to submit your exam. Please try again.",
         variant: "destructive",
       })
+      setSubmitLoading(true)
     }
   }
 
@@ -782,7 +787,7 @@ const startTimer = () => {
               {stats.notAnswered > 0 && (
                 <div className="flex items-center gap-2 mt-2 text-amber-500">
                   <AlertCircle className="h-4 w-4" />
-                  <span>You have {stats.notAnswered} unanswered questions.</span>
+                  <span>You have {exam.totalQuestions - stats.answered} unanswered questions.</span>
                 </div>
               )}
             </DialogDescription>
@@ -791,7 +796,13 @@ const startTimer = () => {
             <Button variant="outline" onClick={() => setShowSubmitDialog(false)}>
               Continue Exam
             </Button>
-            <Button onClick={submitExam}>Submit Exam</Button>
+                <Button 
+                  onClick={submitExam} 
+                  disabled={submitLoading}
+                  className="flex items-center gap-2"
+                >
+                  {submitLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Submit Exam"}
+                </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
