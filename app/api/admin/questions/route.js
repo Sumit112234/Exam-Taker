@@ -192,3 +192,36 @@ async function updateExamStatistics(examId) {
     console.error("Error updating exam statistics:", error)
   }
 }
+
+
+export async function DELETE(request) {
+  try {
+    await connectDB();
+
+    // const user = await getCurrentUser();
+    // if (!user) {
+    //   return NextResponse.json(
+    //     { message: "Unauthorized" },
+    //     { status: 401 }
+    //   );
+    // }
+
+    // Delete all questions where subject is AIML
+    const result = await Question.deleteMany({ subject: "AIML" });
+
+    return NextResponse.json(
+      {
+        message: "Deleted all questions with subject AIML",
+        deletedCount: result.deletedCount,
+      },
+      { status: 200 }
+    );
+
+  } catch (error) {
+    console.error("Error deleting AIML questions:", error);
+    return NextResponse.json(
+      { message: "Server error", error: error.message },
+      { status: 500 }
+    );
+  }
+}

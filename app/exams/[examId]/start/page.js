@@ -207,6 +207,13 @@ const startTimer = () => {
   }, 1000)
 }
 
+function decodeHtmlEntities(str = "") {
+  const txt = document.createElement("textarea")
+  txt.innerHTML = str
+  return txt.value
+}
+
+
   const saveProgress = async () => {
     try {
       setAutoSaveStatus("Saving...")
@@ -607,7 +614,9 @@ const startTimer = () => {
                 <Card className="mb-6">
                   <CardContent className="pt-6">
                     <div className="space-y-4">
-                      <div className="text-lg leading-relaxed">{currentQuestion.questionText}</div>
+                     <div className="text-lg leading-relaxed">
+                          {decodeHtmlEntities(currentQuestion.questionText)}
+                        </div>
 
                       {currentQuestion.questionTextHindi && (
                         <div className="text-lg leading-relaxed text-gray-700 border-t pt-4">

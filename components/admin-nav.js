@@ -69,7 +69,7 @@ export function AdminNav() {
   const pathname = usePathname()
 
   return (
-    <div className="flex flex-col gap-2 p-4">
+    <div className="flex flex-col gap-2 p-4 ">
       {items.map((item) => (
         <Link key={item.href} href={item.href}>
           <Button
