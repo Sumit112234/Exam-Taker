@@ -237,6 +237,7 @@ export default function QuestionsManagement() {
       const response = await fetch(`/api/admin/categories/${categoryId}/exams`)
       if (response.ok) {
         const data = await response.json()
+        // console.log("Fetch exams response:", data);
         setAvailableExams(data)
       }
     } catch (error) {

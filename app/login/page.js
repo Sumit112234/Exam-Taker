@@ -92,7 +92,7 @@ const ModernLoginForm = () => {
       // }
 
       // // Redirect to dashboard after successful signup
-      // router.push("/dashboard")
+      // router.push("/admin")
       // router.refresh()
     } catch (err) {
       console.error("Signup failed:", err)

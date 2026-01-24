@@ -49,6 +49,7 @@ export function AuthProvider({ children }) {
 
       if (response.ok) {
         setUser(data.user)
+        // console.log("Login successful:", data)
 
         // Redirect based on role
         if (data.user.role === "admin") {
@@ -76,10 +77,14 @@ export function AuthProvider({ children }) {
       })
 
       const data = await response.json()
-      console.log("Signup response:", data, response)
+      // console.log("Signup response:", data, response)
       if (response.ok) {
         setUser(data.user)
-        router.push("/dashboard")
+         if (data.user.role === "admin") {
+          router.push("/admin")
+        } else {
+          router.push("/dashboard")
+        }
         router.refresh()
         return { success: true }
       } else {

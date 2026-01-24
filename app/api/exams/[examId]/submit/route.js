@@ -8,13 +8,13 @@ import { getCurrentUser } from "@/lib/auth"
 export async function POST(request, { params }) {
   try {
     await connectDB()
-
+    let param = await params
     const user = await getCurrentUser()
     if (!user) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 })
     }
 
-    const { examId } = params
+    const { examId } = param
     const { answers, markedForReview, timeSpent } = await request.json()
 
     // Get the exam

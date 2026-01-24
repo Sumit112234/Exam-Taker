@@ -11,8 +11,8 @@ export async function POST(request, { params }) {
     if (!currentUser || currentUser.role !== "admin") {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 })
     }
-
-    const { examId } = params
+    let param = await params
+    const { examId } = param
     const { questionId } = await request.json()
 
     const exam = await Exam.findByIdAndUpdate(examId, { $addToSet: { questions: questionId } }, { new: true })

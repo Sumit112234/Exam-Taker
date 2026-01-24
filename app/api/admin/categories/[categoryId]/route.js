@@ -6,12 +6,14 @@ import { getCurrentUser } from "@/lib/auth"
 export async function GET(request, { params }) {
   try {
     await connectDB()
+    let param = await params
 
-    const category = await Category.findById(params.categoryId).populate("createdBy", "name email")
+    const category = await Category.findById(param.categoryId).populate("createdBy", "name email")
 
     if (!category) {
       return NextResponse.json({ message: "Category not found" }, { status: 404 })
     }
+
 
     return NextResponse.json(category)
   } catch (error) {
@@ -25,13 +27,14 @@ export async function PUT(request, { params }) {
     await connectDB()
 
     const currentUser = await getCurrentUser()
+    let param = await params
     if (!currentUser || currentUser.role !== "admin") {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 })
     }
 
     const updateData = await request.json()
 
-    const category = await Category.findByIdAndUpdate(params.categoryId, updateData, {
+    const category = await Category.findByIdAndUpdate(param.categoryId, updateData, {
       new: true,
       runValidators: true,
     }).populate("createdBy", "name email")
@@ -50,13 +53,14 @@ export async function PUT(request, { params }) {
 export async function DELETE(request, { params }) {
   try {
     await connectDB()
+    let param = await params
 
     const currentUser = await getCurrentUser()
     if (!currentUser || currentUser.role !== "admin") {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 })
     }
 
-    const category = await Category.findByIdAndUpdate(params.categoryId, { isActive: false }, { new: true })
+    const category = await Category.findByIdAndUpdate(param.categoryId, { isActive: false }, { new: true })
 
     if (!category) {
       return NextResponse.json({ message: "Category not found" }, { status: 404 })

@@ -13,8 +13,8 @@ export async function GET(request, { params }) {
     if (!user) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 })
     }
-
-    const { resultId } = params
+    let param = await params
+    const { resultId } = param
 
     const result = await Result.findById(resultId).populate("exam").populate("user", "name email")
 

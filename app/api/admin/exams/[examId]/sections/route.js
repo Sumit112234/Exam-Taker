@@ -6,13 +6,13 @@ import { getCurrentUser } from "@/lib/auth"
 export async function GET(request, { params }) {
   try {
     await connectDB()
-
+    let param = await params
     const user = await getCurrentUser()
     if (!user || user.role !== "admin") {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 })
     }
 
-    const exam = await Exam.findById(params.examId).select("sections")
+    const exam = await Exam.findById(param.examId).select("sections")
 
     if (!exam) {
       return NextResponse.json({ message: "Exam not found" }, { status: 404 })

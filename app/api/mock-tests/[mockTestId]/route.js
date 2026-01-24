@@ -7,7 +7,8 @@ import { getCurrentUser } from "@/lib/auth"
 export async function GET(request, { params }) {
   try {
     await connectDB()
-    const { mockTestId } = params
+        let param = await params
+    const { mockTestId } = param
 
     const mockTest = await MockTest.findById(mockTestId)
       .populate({

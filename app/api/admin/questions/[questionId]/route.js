@@ -7,13 +7,13 @@ import { getCurrentUser } from "@/lib/auth"
 export async function GET(request, { params }) {
   try {
     await connectDB()
-
+    let param = await params
     const user = await getCurrentUser()
     if (!user || user.role !== "admin") {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 })
     }
 
-    const question = await Question.findById(params.questionId)
+    const question = await Question.findById(param.questionId)
       .populate("category", "name code icon color")
       .populate("createdBy", "name email")
 
@@ -31,7 +31,7 @@ export async function GET(request, { params }) {
 export async function PUT(request, { params }) {
   try {
     await connectDB()
-
+    let param = await params
     const user = await getCurrentUser()
     if (!user || user.role !== "admin") {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 })
@@ -60,7 +60,7 @@ export async function PUT(request, { params }) {
       }
     }
 
-    const question = await Question.findByIdAndUpdate(params.questionId, questionData, {
+    const question = await Question.findByIdAndUpdate(param.questionId, questionData, {
       new: true,
       runValidators: true,
     })
@@ -81,14 +81,14 @@ export async function PUT(request, { params }) {
 export async function DELETE(request, { params }) {
   try {
     await connectDB()
-
+    let param = await params
     const user = await getCurrentUser()
     if (!user || user.role !== "admin") {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 })
     }
 
     // Find the question first to get exam information
-    const question = await Question.findById(params.questionId)
+    const question = await Question.findById(param.questionId)
     if (!question) {
       return NextResponse.json({ message: "Question not found" }, { status: 404 })
     }
@@ -98,11 +98,11 @@ export async function DELETE(request, { params }) {
       try {
         await Exam.updateMany(
           {
-            "sections.questionIds": params.questionId,
+            "sections.questionIds": param.questionId,
           },
           {
             $pull: {
-              "sections.$.questionIds": params.questionId,
+              "sections.$.questionIds": param.questionId,
             },
           },
         )
@@ -112,7 +112,7 @@ export async function DELETE(request, { params }) {
     }
 
     // Soft delete the question
-    await Question.findByIdAndUpdate(params.questionId, { isActive: false })
+    await Question.findByIdAndUpdate(param.questionId, { isActive: false })
 
     return NextResponse.json({ message: "Question deleted successfully" })
   } catch (error) {

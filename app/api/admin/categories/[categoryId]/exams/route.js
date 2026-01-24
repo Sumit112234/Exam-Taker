@@ -3,7 +3,7 @@ import connectDB from "@/lib/mongodb"
 import Exam from "@/models/Exam"
 import { getCurrentUser } from "@/lib/auth"
 
-export async function GET(request, { params }) {
+export async function GET(request, {  params }) {
   try {
     await connectDB()
 
@@ -12,8 +12,10 @@ export async function GET(request, { params }) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 })
     }
 
+    let param = await params
+
     const exams = await Exam.find({
-      category: params.categoryId,
+      category: param.categoryId,
       isActive: true,
     })
       .select("_id title type description sections")

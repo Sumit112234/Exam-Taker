@@ -7,8 +7,8 @@ import { getCurrentUser } from "@/lib/auth"
 export async function GET(request, { params }) {
   try {
     await connectDB()
-
-    const { examId } = params
+    let param = await params
+    const { examId } = param
     const user = await getCurrentUser()
 
     if (!user) {

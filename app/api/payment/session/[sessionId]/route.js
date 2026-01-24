@@ -13,8 +13,8 @@ export async function GET(request, { params }) {
     if (!user) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 })
     }
-
-    const { sessionId } = params
+    let param = await params
+    const { sessionId } = param
 
     // Retrieve the session from Stripe
     const session = await stripe.checkout.sessions.retrieve(sessionId)

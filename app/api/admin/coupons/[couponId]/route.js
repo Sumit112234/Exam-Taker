@@ -6,13 +6,14 @@ import { getCurrentUser } from "@/lib/auth"
 export async function DELETE(request, { params }) {
   try {
     await connectDB()
+    let param = await params
 
     const currentUser = await getCurrentUser()
     if (!currentUser || currentUser.role !== "admin") {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 })
     }
 
-    const { couponId } = params
+    const { couponId } = param
 
     const coupon = await Coupon.findByIdAndDelete(couponId)
 

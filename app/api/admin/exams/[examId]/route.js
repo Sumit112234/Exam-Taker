@@ -9,6 +9,7 @@ import Question from "@/models/Question"
 export async function DELETE(request, { params }) {
   try {
     await connectDB()
+    let param = await params
 
     // Check authentication and authorization
     const user = await getCurrentUser()
@@ -17,7 +18,7 @@ export async function DELETE(request, { params }) {
     }
 
     // Find the exam first
-    const exam = await Exam.findById(params.examId)
+    const exam = await Exam.findById(param.examId)
     
     if (!exam) {
       return NextResponse.json({ message: "Exam not found" }, { status: 404 })
@@ -32,7 +33,7 @@ export async function DELETE(request, { params }) {
     })
 
     // Delete the exam
-    await Exam.findByIdAndDelete(params.examId)
+    await Exam.findByIdAndDelete(param.examId)
 
     // If there are questions associated with this exam, delete them too
     if (allQuestionIds.length > 0) {
@@ -57,13 +58,14 @@ export async function DELETE(request, { params }) {
 export async function GET(request, { params }) {
   try {
     await connectDB()
+    let param = await params
 
     const user = await getCurrentUser()
     if (!user || user.role !== "admin") {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 })
     }
 
-    const exam = await Exam.findById(params.examId)
+    const exam = await Exam.findById(param.examId)
       .populate("category", "name code icon color")
       .populate("createdBy", "name email")
 
@@ -81,6 +83,7 @@ export async function GET(request, { params }) {
 export async function PUT(request, { params }) {
   try {
     await connectDB()
+        let param = await params
 
     const user = await getCurrentUser()
     if (!user || user.role !== "admin") {
@@ -89,7 +92,7 @@ export async function PUT(request, { params }) {
 
     const examData = await request.json()
 
-    const exam = await Exam.findByIdAndUpdate(params.examId, examData, {
+    const exam = await Exam.findByIdAndUpdate(param.examId, examData, {
       new: true,
       runValidators: true,
     })

@@ -11,8 +11,8 @@ export async function PUT(request, { params }) {
     if (!currentUser || currentUser.role !== "admin") {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 })
     }
-
-    const { subscriptionId } = params
+    let param = await params
+    const { subscriptionId } = param
     const updateData = await request.json()
 
     const subscription = await Subscription.findByIdAndUpdate(subscriptionId, updateData, { new: true })
@@ -31,13 +31,13 @@ export async function PUT(request, { params }) {
 export async function DELETE(request, { params }) {
   try {
     await connectDB()
-
+    let param = await params
     const currentUser = await getCurrentUser()
     if (!currentUser || currentUser.role !== "admin") {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 })
     }
 
-    const { subscriptionId } = params
+    const { subscriptionId } = param
 
     const subscription = await Subscription.findByIdAndDelete(subscriptionId)
 

@@ -6,8 +6,8 @@ import Question from "@/models/Question"
 export async function GET(request, { params }) {
   try {
     await connectDB()
-
-    const { examId } = params
+    let param = await params
+    const { examId } = param
 
     console.log(examId ? `Fetching exam with ID: ${examId}` : "Exam ID not provided")
 

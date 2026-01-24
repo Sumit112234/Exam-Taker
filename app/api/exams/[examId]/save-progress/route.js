@@ -10,8 +10,8 @@ export async function POST(request, { params }) {
     if (!user) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 })
     }
-
-    const { examId } = params
+    let param = await params
+    const { examId } = param
     const progressData = await request.json()
 
     // In a real implementation, you would save this to a database
