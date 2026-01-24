@@ -208,9 +208,8 @@ const startTimer = () => {
 }
 
 function decodeHtmlEntities(str = "") {
-  const txt = document.createElement("textarea")
-  txt.innerHTML = str
-  return txt.value
+  // console.log("str form decoede :" , str)
+  return stripHtml(str)
 }
 
 
@@ -520,6 +519,20 @@ function decodeHtmlEntities(str = "") {
     return { answered, notAnswered, notVisited, markedForReviewCount, answeredAndMarked }
   }
 
+function stripHtml(html = "") {
+ // Step 1: remove tags but keep structure
+  const withBreaks = html
+    .replace(/<\/p>/gi, '\n\n')
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<[^>]*>/g, '');
+
+  // Step 2: decode HTML entities
+  const textarea = document.createElement("textarea");
+  textarea.innerHTML = withBreaks;
+
+  return textarea.value.trim();
+}
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -635,10 +648,9 @@ function decodeHtmlEntities(str = "") {
                       )}
 
                       {currentQuestion.passage && (
-                        <div className="bg-gray-50 p-4 rounded-lg border">
-                          <h4 className="font-medium mb-2">Passage:</h4>
-                          <p className="text-sm leading-relaxed">{currentQuestion.passage}</p>
-                        </div>
+                        <div className="bg-gray-50 p-4 rounded-lg border whitespace-pre-line">
+                        {stripHtml(currentQuestion.passage)}
+                      </div>
                       )}
 
                       <RadioGroup
