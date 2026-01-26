@@ -18,7 +18,7 @@ export async function GET(request, {  params }) {
       category: param.categoryId,
       isActive: true,
     })
-      .select("_id title type description sections")
+      .select("_id title type description sections maxQuestions totalDuration")
       .sort({ createdAt: -1 })
 
     return NextResponse.json(exams)

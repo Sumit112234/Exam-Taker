@@ -45,6 +45,7 @@ export default function QuestionsManagement() {
   const [availableExams, setAvailableExams] = useState([])
   const [availableSections, setAvailableSections] = useState([])
   const [uploadLoading, setUploadLoading] = useState(false)
+  const [pagination, setPagination] = useState({ page: 1, limit: 20, total: 0, pages: 0 })
 
 
   const [newQuestion, setNewQuestion] = useState({
@@ -124,18 +125,22 @@ export default function QuestionsManagement() {
     try {
       setIsLoading(true)
 
+
       // Fetch categories
       const categoriesResponse = await fetch("/api/admin/categories")
       if (categoriesResponse.ok) {
         const categoriesData = await categoriesResponse.json()
         setCategories(categoriesData)
       }
+      console.log("Categories fetched:", categories)
 
       // Fetch questions
       const questionsResponse = await fetch("/api/admin/questions")
       if (questionsResponse.ok) {
         const questionsData = await questionsResponse.json()
-        setQuestions(questionsData.questions || questionsData)
+        console.log("Questions fetched:", questionsData)
+        setPagination(questionsData.pagination )
+        setQuestions(questionsData.questions || [])
       }
     } catch (error) {
       console.error("Error fetching data:", error)
@@ -511,11 +516,12 @@ export default function QuestionsManagement() {
                           </SelectTrigger>
                           <SelectContent>
                             {console.log("Available exams:", availableExams)}
+
 {availableExams.map((exam) => {
-  const totalQuestions = exam.sections?.reduce((sum, sec) => sum + (sec.questions || 0), 0)
+  const totalQuestions = exam.maxQuestions;
   const uploadedQuestions = exam.sections?.reduce((sum, sec) => sum + (sec.questionIds?.length || 0), 0)
 
-  const isAllUploaded = uploadedQuestions === totalQuestions && totalQuestions > 0
+  const isAllUploaded = uploadedQuestions >= totalQuestions 
   const isNoneUploaded = uploadedQuestions === 0
   const isPartiallyUploaded = uploadedQuestions > 0 && uploadedQuestions < totalQuestions
 
@@ -1249,7 +1255,7 @@ export default function QuestionsManagement() {
             <FileText className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{questions.length}</div>
+            <div className="text-2xl font-bold">{pagination.total}</div>
             <p className="text-xs text-muted-foreground">All questions in database</p>
           </CardContent>
         </Card>
@@ -1388,6 +1394,7 @@ export default function QuestionsManagement() {
                 </TableRow>
               </TableHeader>
               <TableBody>
+              {console.log("Filtered Questions:", filteredQuestions)}
                 {filteredQuestions.map((question) => (
                   <TableRow key={question._id}>
                     <TableCell>

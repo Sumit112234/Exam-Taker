@@ -1,6 +1,8 @@
 import { AdminNav } from "@/components/admin-nav"
 import { UserNav } from "@/components/user-nav"
 import { AdminBreadcrumb } from "@/components/admin-breadcrumb"
+import { Toaster } from "@/components/ui/toaster"
+
 
 export default function AdminLayout({ children }) {
   return (
@@ -20,6 +22,7 @@ export default function AdminLayout({ children }) {
         <main className="flex w-full flex-col overflow-hidden py-6">
           <AdminBreadcrumb />
           {children}
+          <Toaster />
         </main>
       </div>
     </div>

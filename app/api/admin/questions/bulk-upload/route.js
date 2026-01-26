@@ -15,6 +15,7 @@ export async function POST(request) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 })
     }
 
+
     const formData = await request.formData()
     const category = formData.get("category")
     const examId = formData.get("examId")
@@ -44,6 +45,8 @@ export async function POST(request) {
     if (!exam) {
       return NextResponse.json({ message: "Exam not found" }, { status: 404 })
     }
+
+ 
 
     const section = exam.sections.find((s) => s.sectionId === sectionId)
     if (!section) {
@@ -125,6 +128,15 @@ export async function POST(request) {
     if (questionsData.length === 0) {
       return NextResponse.json({ message: "No valid questions found in the uploaded data" }, { status: 400 })
     }
+
+       // check if question length not exeeds max limit
+
+    if(exam.totalQuestions + questionsData.length > exam.maxQuestions){
+      return NextResponse.json({ message: `Exam has reached its maximum question limit of ${exam.maxQuestions}` }, { status: 400 })
+    }
+
+      // console.log("backend : ",{ exam , questionsData, section} )
+    
 
     const createdQuestions = []
     const errors = []

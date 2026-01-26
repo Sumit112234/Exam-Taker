@@ -80,6 +80,7 @@ export default function ExamsPage() {
     sections: [],
     difficulty: "Medium",
     tags: [],
+    maxQuestions: 0,
   })
 
   const router = useRouter()
@@ -150,6 +151,30 @@ export default function ExamsPage() {
   }
 
   const handleCreateExam = async () => {
+    // console.log("Creating exam with data:", formData)
+    if(formData.sections.length === 0){
+      alert("At least one section is required")
+      return ;
+    }
+
+    let totalQuestions = formData.sections.reduce((sum, section) => sum + Number(section.questions || 0), 0);
+    // console.log({totalQuestions})
+
+    if (formData.maxQuestions !== totalQuestions) {
+      alert("Maximum questions and section questions are not same")
+      return ;
+    }
+
+
+    let totalDuration = formData.sections.reduce((sum, section) => sum + Number(section.duration || 0), 0);
+  // console.log({totalDuration})
+    if (formData.totalDuration !== totalDuration) {
+      alert("Total duration and section durations are not same")
+      return ;
+    }
+    // console.log("Creating ", totalDuration, totalQuestions)
+
+    
     try {
       const response = await fetch("/api/admin/exams", {
         method: "POST",
@@ -294,6 +319,7 @@ export default function ExamsPage() {
       sections: [],
       difficulty: "Medium",
       tags: [],
+      maxQuestions: 0,
     })
     setCurrentStep(1)
   }
@@ -572,6 +598,18 @@ export default function ExamsPage() {
                   </Select>
                 </div>
               )}
+               <div className="space-y-2">
+                <Label htmlFor="maxQuestions">Maximum Number of questions</Label>
+                <Input
+                  id="maxQuestions"
+                  name="maxQuestions"
+                  type="number"
+                  min="0"
+                  required
+                  value={formData.maxQuestions}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, maxQuestions: Number.parseInt(e.target.value) }))}
+                />
+              </div>
             </div>
           </div>
         )}

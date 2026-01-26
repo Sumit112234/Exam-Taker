@@ -55,9 +55,8 @@ export async function GET(request) {
       Question.find(filter)
         .populate("category", "name code icon color")
         .populate("createdBy", "name email")
-        .sort({ createdAt: -1 })
-        .skip(skip)
-        .limit(limit),
+        .sort({ createdAt: -1 }),
+       
       Question.countDocuments(filter),
     ])
 
@@ -163,7 +162,6 @@ export async function POST(request) {
   }
 }
 
-// Helper function to update exam statistics
 async function updateExamStatistics(examId) {
   try {
     const exam = await Exam.findById(examId).populate("sections.questionIds")

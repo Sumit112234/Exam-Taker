@@ -81,6 +81,10 @@ const examSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    maxQuestions: {
+      type: Number,
+      default: 0,
+    },
     passingMarks: {
       type: Number,
       default: 40,
