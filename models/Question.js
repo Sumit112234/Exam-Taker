@@ -130,6 +130,7 @@ const questionSchema = new mongoose.Schema(
   },
 )
 
+
 // Indexes for better performance
 questionSchema.index({ category: 1, examName: 1, sectionName: 1 })
 questionSchema.index({ subject: 1, topic: 1, chapter: 1 })

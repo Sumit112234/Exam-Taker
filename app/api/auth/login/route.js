@@ -74,6 +74,7 @@ console.log("setting cookies for signup refresh token", response.cookies.get("re
 
     return response
   } catch (error) {
+    console.log("Login error:", error)
     console.error("Login error:", error)
     return NextResponse.json({ message: "Internal server error" }, { status: 500 })
   }
