@@ -1,5 +1,7 @@
 "use client"
 
+// exam delete hoye to uske saath jo users ne us exam ko diya h result wo bhi delete ho jaye taki data consistent rahe, varna future me jab user apne results dekhega to wo deleted exam ka result bhi dekhne ko milega jo ki confusing hoga. Isse data integrity maintain rahegi aur user experience bhi better hoga.
+
 import { useState, useEffect, useRef, use } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
@@ -17,9 +19,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { Clock, Maximize, User, Pause, Play, FileText, AlertCircle, Flag,Loader2 } from "lucide-react"
+import { Clock, Maximize, User, Pause, Play, FileText, AlertCircle, Flag,Loader2, ToggleRight } from "lucide-react"
 import { useAuth } from "@/contexts/AuthContext"
 import { useToast } from "@/hooks/use-toast"
+import { constructFromSymbol } from "date-fns/constants"
 
 export default function TakeExam({ params }) {
   const router = useRouter()
@@ -44,10 +47,26 @@ export default function TakeExam({ params }) {
   const [autoSaveStatus, setAutoSaveStatus] = useState("")
   const [questionMap, setQuestionMap] = useState({}) // Maps section-question index to actual question object
   const [submitLoading, setSubmitLoading] = useState(false) // Maps section-question index to actual question object
+  const [rightSidebarOpen, setRightSidebarOpen] = useState(true) // Maps section-question index to actual question object
+
 
   const timerRef = useRef(null)
   const sectionTimerRef = useRef(null)
+  const timeLeftRef = useRef(timeLeft)
+  const sectionTimeLeftRef = useRef(sectionTimeLeft)
+  const currentSectionIndexRef = useRef(currentSectionIndex)
   const hasSubmittedRef = useRef(false)
+
+  const answersRef = useRef(answers)
+  const questionMapRef = useRef(questionMap)
+  const markedForReviewRef = useRef(markedForReview)
+
+
+  // Keep refs in sync with state on every render
+  useEffect(() => { answersRef.current = answers }, [answers])
+  useEffect(() => { questionMapRef.current = questionMap }, [questionMap])
+  useEffect(() => { markedForReviewRef.current = markedForReview }, [markedForReview])
+
 
 
   useEffect(() => {
@@ -80,6 +99,22 @@ export default function TakeExam({ params }) {
 
     return () => clearInterval(autoSaveInterval)
   }, [answers])
+
+  useEffect(() => {
+    timeLeftRef.current = timeLeft
+  }, [timeLeft])
+
+  useEffect(() => {
+    currentSectionIndexRef.current = currentSectionIndex
+  }, [currentSectionIndex])
+
+  useEffect(() => {
+    sectionTimeLeftRef.current = sectionTimeLeft
+  }, [sectionTimeLeft])
+
+  const toggleRightSidebar = () => {
+    setRightSidebarOpen(!rightSidebarOpen)
+  }
 
   const fetchExamData = async () => {
     try {
@@ -177,13 +212,16 @@ export default function TakeExam({ params }) {
       setIsLoading(false)
     }
   }
-const startTimer = () => {
+
+const startTimer = (onlySection = false) => {
   // Clear previous timers before setting new ones
-  if (timerRef.current) clearInterval(timerRef.current)
+  if (timerRef.current && !onlySection) clearInterval(timerRef.current)
   if (sectionTimerRef.current) clearInterval(sectionTimerRef.current)
 
   console.log("Timer started with time left:", timeLeft)
 
+ if(!onlySection)
+ {
   timerRef.current = setInterval(() => {
     setTimeLeft((prev) => {
       if (prev <= 1) {
@@ -195,10 +233,19 @@ const startTimer = () => {
       return prev - 1
     })
   }, 1000)
+ }
+   if (!exam.settings.allowSectionWiseTiming) return
+
+   console.log("Section Timer started with time left:",  exam.settings.allowSectionWiseTiming, exam)
+
 
   sectionTimerRef.current = setInterval(() => {
+
+    
     setSectionTimeLeft((prev) => {
       if (prev <= 1) {
+        clearInterval(sectionTimerRef.current)
+        console.log("Time's up! Section complete.")
         handleSectionComplete()
         return 0
       }
@@ -207,35 +254,45 @@ const startTimer = () => {
   }, 1000)
 }
 
-function decodeHtmlEntities(str = "") {
-  // console.log("str form decoede :" , str)
-  return stripHtml(str)
-}
 
 
   const saveProgress = async () => {
+
     try {
+      // console.log("Saving progress...", { answers, markedForReview: Array.from(markedForReview), currentSectionIndex, currentQuestionIndex, timeLeft, sectionTimeLeft })
+
+
+      console.log(timeLeft, sectionTimeLeft,timeLeftRef.current, sectionTimeLeftRef.current, currentSectionIndex, currentQuestionIndex, answers, markedForReview)
+
+
       setAutoSaveStatus("Saving...")
 
-      // Save to local storage for quick recovery
       const progress = {
-        answers,
-        markedForReview: Array.from(markedForReview),
-        currentSection: currentSectionIndex,
-        currentQuestion: currentQuestionIndex,
-        timeLeft,
-        sectionTimeLeft,
-        timestamp: new Date().toISOString(),
-      }
+          answers,
+          markedForReview: Array.from(markedForReview),
+          currentSection: currentSectionIndexRef.current,
+          currentQuestion: currentQuestionIndex,
+          timeLeft: timeLeftRef.current,
+          sectionTimeLeft: sectionTimeLeftRef.current,
+          timestamp: new Date().toISOString(),
+        }
 
-      localStorage.setItem(`exam-progress-${examId}`, JSON.stringify(progress))
+        console.log("Saving progress...", progress)
 
-      // Also save to server
-      await fetch(`/api/exams/${examId}/save-progress`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(progress),
-      })
+        localStorage.setItem(
+          `exam-progress-${examId}`,
+          JSON.stringify(progress)
+        )
+
+        await fetch(`/api/exams/${examId}/save-progress`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(progress),
+        })
+
+     
 
       setAutoSaveStatus("Saved")
       setTimeout(() => setAutoSaveStatus(""), 2000)
@@ -244,6 +301,11 @@ function decodeHtmlEntities(str = "") {
       setAutoSaveStatus("Error saving")
       setTimeout(() => setAutoSaveStatus(""), 2000)
     }
+  }
+
+  function decodeHtmlEntities(str = "") {
+    // console.log("str form decoede :" , str)
+    return stripHtml(str)
   }
 
   const formatTime = (seconds) => {
@@ -266,9 +328,11 @@ function decodeHtmlEntities(str = "") {
   }
 
   const handleMarkForReview = () => {
+    // console.log("Marking for review:", currentSectionIndex, currentQuestionIndex)
     const questionKey = `${currentSectionIndex}-${currentQuestionIndex}`
     const newMarked = new Set(markedForReview)
-
+    
+    // console.log("Current Marked for Review:", markedForReview, "New Marked for Review:", newMarked, "Question Key:", questionKey)
     if (newMarked.has(questionKey)) {
       newMarked.delete(questionKey)
     } else {
@@ -276,6 +340,7 @@ function decodeHtmlEntities(str = "") {
     }
 
     setMarkedForReview(newMarked)
+    goToNextQuestion();
   }
 
   const handleClearResponse = () => {
@@ -286,6 +351,7 @@ function decodeHtmlEntities(str = "") {
   }
 
   const goToQuestion = (sectionIndex, questionIndex) => {
+    console.log("Going to section:", sectionIndex, "question:", questionIndex)
     if (sectionIndex !== currentSectionIndex) {
       // Save current section time
       saveProgress()
@@ -295,6 +361,7 @@ function decodeHtmlEntities(str = "") {
         setSectionTimeLeft(exam.sections[sectionIndex].duration * 60)
       }
     }
+    console.log("Going for section:", sectionIndex, currentSectionIndex)
 
     setCurrentSectionIndex(sectionIndex)
     setCurrentQuestionIndex(questionIndex)
@@ -302,12 +369,25 @@ function decodeHtmlEntities(str = "") {
 
   const goToNextQuestion = () => {
     const currentSection = exam.sections[currentSectionIndex]
+
+    console.log("Current Section:", currentSection, "Current Question Index:", currentQuestionIndex, currentSectionIndex)
+    // if (currentQuestionIndex < currentSection.questions - 1) {
+    //   console.log("Moving to next section if:", currentSectionIndex + 1, currentQuestionIndex)
+    //   setCurrentQuestionIndex(currentQuestionIndex + 1)
+    // } else if (currentSectionIndex < exam.sections.length - 1) {
+    //   console.log("Moving to next section else:", currentSectionIndex + 1)
+    //   setCurrentSectionIndex(currentSectionIndex + 1)
+    //   setCurrentQuestionIndex(0)
+    //   setSectionTimeLeft(exam.sections[currentSectionIndex + 1].duration * 60)
+    // }
     if (currentQuestionIndex < currentSection.questions - 1) {
+      console.log("Moving to next section if:", currentSectionIndex + 1, currentQuestionIndex)
       setCurrentQuestionIndex(currentQuestionIndex + 1)
-    } else if (currentSectionIndex < exam.sections.length - 1) {
-      setCurrentSectionIndex(currentSectionIndex + 1)
+    } else {
+      console.log("Moving to next section else:", currentSectionIndex + 1)
+      // setCurrentSectionIndex(currentSectionIndex + 1)
       setCurrentQuestionIndex(0)
-      setSectionTimeLeft(exam.sections[currentSectionIndex + 1].duration * 60)
+      // setSectionTimeLeft(exam.sections[currentSectionIndex + 1].duration * 60)
     }
   }
 
@@ -321,17 +401,41 @@ function decodeHtmlEntities(str = "") {
     }
   }
 
-  const handleSectionComplete = () => {
+  const findTimeLeftforSections = () => {
+    let timeSpent = 0
+    for(let i=0; i <= currentSectionIndexRef.current; i++) {
+      timeSpent += exam.sections[i].duration * 60
+    }
+
+    console.log("Time spent on completed sections:",exam.totalDuration * 60, timeSpent)
+    return exam.totalDuration * 60 - timeSpent
+  }
+
+  const handleSectionComplete = (manually = false) => {
+
+    if(manually)
+    {
+      setShowSubmitDialog(false)
+      setTimeLeft(findTimeLeftforSections()) // calculate remaining time based on sections completed
+      // setTimeLeft(timeLeftRef.current - sectionTimeLeftRef.current) // deduct the remaining section time from overall time
+    }
+
     if (currentSectionIndex < exam.sections.length - 1) {
+      let title = manually ? "Moving to Next Section" : "Section Time Up"
+      
+
       toast({
-        title: "Section Time Up",
+        title: title,
         description: `Moving to the next section: ${exam.sections[currentSectionIndex + 1].name}`,
         variant: "default",
       })
 
-      setCurrentSectionIndex(currentSectionIndex + 1)
+      setCurrentSectionIndex(currentSectionIndexRef.current + 1)
+
       setCurrentQuestionIndex(0)
       setSectionTimeLeft(exam.sections[currentSectionIndex + 1].duration * 60)
+      startTimer(true); //restart timer for next section without resetting overall timer
+
     } else {
       console.log("coming to the handleAutoSubmit")
       // handleAutoSubmit()
@@ -352,9 +456,9 @@ function decodeHtmlEntities(str = "") {
       description: "Your exam is being submitted automatically.",
       variant: "default",
     })
-    router.push(`/exams`)
-
+    
     await submitExam()
+    // router.push(`/exams`)
   }
 
   const submitExam = async () => {
@@ -366,25 +470,35 @@ function decodeHtmlEntities(str = "") {
     try {
       setSubmitLoading(true)
       // Prepare submission data
-      const submissionData = {
-        answers: {},
-        markedForReview: Array.from(markedForReview),
-        timeSpent: exam.totalDuration * 60 - timeLeft,
-      }
+
+        const currentAnswers = answersRef.current           // ✅ always latest
+        const currentQuestionMap = questionMapRef.current   // ✅ always latest
+        const currentMarkedForReview = markedForReviewRef.current
+        const currentTimeLeft = timeLeftRef.current
+
+        const submissionData = {
+          answers: {},
+          markedForReview: Array.from(currentMarkedForReview),
+          timeSpent: exam.totalDuration * 60 - currentTimeLeft,
+        }
+    
 
       // Convert answers to question ID format
-      Object.entries(answers).forEach(([key, value]) => {
-        const [sectionIndex, questionIndex] = key.split("-").map(Number)
-        const question = questionMap[key]
+      Object.entries(currentAnswers).forEach(([key, value]) => {
+          const [sectionIndex, questionIndex] = key.split("-").map(Number)
+          const question = currentQuestionMap[key]
 
-        if (question && question._id) {
-          submissionData.answers[question._id] = {
-            answer: value,
-            questionId: question._id,
-            sectionIndex,
+          if (question && question._id) {
+            submissionData.answers[question._id] = {
+              answer: value,
+              questionId: question._id,
+              sectionIndex,
+            }
           }
-        }
-      })
+        })
+
+      console.log("Submitting exam with data:", submissionData)
+      // return ;
 
       const response = await fetch(`/api/exams/${examId}/submit`, {
         method: "POST",
@@ -494,7 +608,7 @@ function decodeHtmlEntities(str = "") {
     exam.sections.forEach((section, sectionIndex) => {
       for (let questionIndex = 0; questionIndex < section.questions; questionIndex++) {
         const status = getQuestionStatus(sectionIndex, questionIndex)
-        console.log("getting status for each section and question", sectionIndex, questionIndex, status)
+        // console.log("getting status for each section and question", sectionIndex, questionIndex, status)
         switch (status) {
           case "answered":
             answered++
@@ -514,7 +628,7 @@ function decodeHtmlEntities(str = "") {
         }
       }
     })
-    console.log("----------------------------")
+    // console.log("----------------------------")
 
     return { answered, notAnswered, notVisited, markedForReviewCount, answeredAndMarked }
   }
@@ -558,8 +672,8 @@ function stripHtml(html = "") {
   return (
     <div className="flex flex-col h-screen px-10 bg-background">
       {/* Header */}
-      <header className="border-b bg-background p-4 sticky top-0 z-10">
-        <div className="flex justify-between items-center">
+      <header className="border-b bg-background p-1 sticky top-0 z-10">
+        <div className=" flex justify-between items-center">
           <h1 className="font-bold text-lg truncate max-w-[50%]">{exam.title}</h1>
           <div className="flex items-center gap-4">
             <Button variant="outline" size="sm" onClick={toggleFullScreen}>
@@ -578,33 +692,51 @@ function stripHtml(html = "") {
 
       <div className="flex flex-1 overflow-hidden">
         {/* Main Content */}
-        <div className="flex-1 flex flex-col overflow-hidden">
-          {/* Section Tabs */}
-          <div className="border-b p-4">
-            <Tabs
-              value={currentSectionIndex.toString()}
-              onValueChange={(value) => {
-                setCurrentSectionIndex(Number.parseInt(value))
-                setCurrentQuestionIndex(0)
-              }}
-            >
-              <TabsList className="grid w-full grid-cols-2">
-                {exam.sections.map((section, index) => (
-                  <TabsTrigger key={index} value={index.toString()} className="flex items-center gap-2">
-                    {section.name}
-                    <Badge variant="outline" className="text-xs">
-                      {section.questions}
-                    </Badge>
-                  </TabsTrigger>
-                ))}
-              </TabsList>
-            </Tabs>
-          </div>
 
-          {/* Question Content */}
-          <div className="flex-1 overflow-y-auto p-6">
-            <div className="max-w-4xl mx-auto">
-              <div className="flex justify-between items-center mb-6">
+        <div className="flex-1 flex flex-col  overflow-hidden">
+          {/* Section Tabs */}
+
+          <div className="border-b p-1 ">
+
+           
+
+            
+ <Tabs
+  className="w-fit"
+  value={currentSectionIndex.toString()}
+  onValueChange={(value) => {
+    
+    // prevent tab switching
+    if (exam.settings.allowSectionWiseTiming) return
+
+    setCurrentSectionIndex(Number.parseInt(value))
+    setCurrentQuestionIndex(0)
+  }}
+>
+  <TabsList className="w-full space-x-1 m-3">
+    {exam.sections.map((section, index) => (
+      <TabsTrigger
+        key={index}
+        value={index.toString()}
+        disabled={
+          exam.settings.allowSectionWiseTiming &&
+          currentSectionIndex !== index
+        }
+        className="flex items-center gap-2"
+      >
+        {section.name}
+
+        {/* <Badge variant="outline" className="text-xs">
+          {section.questions}
+        </Badge> */}
+      </TabsTrigger>
+    ))}
+  </TabsList>
+</Tabs>
+            
+
+
+             <div className="flex  justify-between items-center py-3">
                 <div className="flex items-center gap-4">
                   <h2 className="text-xl font-semibold">Qus No. {currentQuestionIndex + 1}</h2>
                   <div className="flex items-center gap-2 text-sm">
@@ -617,26 +749,32 @@ function stripHtml(html = "") {
                         -{currentQuestion?.negativeMarks || 0.25}
                       </Badge>
                     )}
-                    <span className="text-muted-foreground">Section: {currentSection.name}</span>
+                    {/* {console.log("currentSection:", currentSection)} */}
+                    <span className="text-muted-foreground">Section: {currentSection?.name}</span>
                   </div>
                 </div>
                 {autoSaveStatus && <div className="text-sm text-muted-foreground">{autoSaveStatus}</div>}
-              </div>
+             </div>
+          </div>
+
+          {/* Question Content */}
+
+      
+          <div className="flex-1  overflow-y-auto h-screen p-1  w-full">
+
+            
+            <div className="  h-screen w-full">
+             
 
               {currentQuestion && (
-                <Card className="mb-6">
-                  <CardContent className="pt-6">
-                    <div className="space-y-4">
-                     <div className="text-lg leading-relaxed">
-                          {decodeHtmlEntities(currentQuestion.questionText)}
-                        </div>
-
-                      {currentQuestion.questionTextHindi && (
-                        <div className="text-lg leading-relaxed text-gray-700 border-t pt-4">
-                          {currentQuestion.questionTextHindi}
-                        </div>
+                <Card className="mb-6 h-fit ">
+                  <CardContent className="pt-6 flex h-screen  ">
+                    <div className={`w-1/2 p-3 ${(currentQuestion.passage || currentQuestion.questionImage) ? '' : 'hidden'}`}>
+                        {currentQuestion.passage && (
+                        <div className="bg-gray-50 p-4 rounded-lg border whitespace-pre-line">
+                        {stripHtml(currentQuestion.passage)}
+                      </div>
                       )}
-
                       {currentQuestion.questionImage && (
                         <div className="my-4">
                           <img
@@ -647,11 +785,21 @@ function stripHtml(html = "") {
                         </div>
                       )}
 
-                      {currentQuestion.passage && (
-                        <div className="bg-gray-50 p-4 rounded-lg border whitespace-pre-line">
-                        {stripHtml(currentQuestion.passage)}
+                    </div>
+
+                    <div className={`space-y-4 ${(currentQuestion.passage || currentQuestion.questionImage) ? 'w-1/2' : ''}  p-3 h-fit `}>
+                     <div className="text-lg leading-relaxed">
+                          {decodeHtmlEntities(currentQuestion.questionText)}
                       </div>
+
+                      {currentQuestion.questionTextHindi && (
+                        <div className="text-lg leading-relaxed text-gray-700 border-t pt-4">
+                          {currentQuestion.questionTextHindi}
+                        </div>
                       )}
+
+                   
+                    
 
                       <RadioGroup
                         value={answers[`${currentSectionIndex}-${currentQuestionIndex}`] || ""}
@@ -670,99 +818,153 @@ function stripHtml(html = "") {
                           </div>
                         ))}
                       </RadioGroup>
+                      
                     </div>
+                      <div className={`absolute  ${rightSidebarOpen ? 'hidden' : ''} h-fit right-[3.5rem] top-1/2`}>
+                        <button onClick={toggleRightSidebar}>
+                              <img
+                                className="w-8"
+                                src="/left-arrow.png"
+                                alt="Warning"/>
+                          </button>
+                      </div>
+
+                       <div className={`absolute ${rightSidebarOpen ? '' : 'hidden'} right-[23rem] top-1/2`}>
+                        <button onClick={toggleRightSidebar}>
+                              <img
+                                className="w-8"
+                                src="/right-arrow.png"
+                                alt="Warning"/>
+                          </button>
+                        </div>
+                      
+
                   </CardContent>
                 </Card>
               )}
 
-              {/* Navigation Controls */}
-              <div className="flex justify-between items-center">
+             
+              
+            </div>
+            
+          </div>
+          
+             {/* Down wala div */}
+
+              <div className="flex m-2 justify-between items-center">
                 <div className="flex gap-2">
-                  <Button
+                    <Button variant="outline" onClick={handleMarkForReview}>
+                      <Flag className="h-4 w-4 mr-2" />
+                      Mark For Review & Next
+                    </Button>
+                    <Button variant="outline" onClick={handleClearResponse}>
+                      Clear Response
+                    </Button>
+                  </div>
+              
+                <div className="flex gap-2">
+                  <Button onClick={goToNextQuestion}>Save & Next</Button>
+                  {/* <Button
                     variant="outline"
                     onClick={goToPreviousQuestion}
                     disabled={currentSectionIndex === 0 && currentQuestionIndex === 0}
                   >
                     Previous
-                  </Button>
-                </div>
+                  </Button> */}
+                </div> 
 
-                <div className="flex gap-2">
-                  <Button variant="outline" onClick={handleMarkForReview}>
-                    <Flag className="h-4 w-4 mr-2" />
-                    Mark For Review & Next
-                  </Button>
-                  <Button variant="outline" onClick={handleClearResponse}>
-                    Clear Response
-                  </Button>
-                  <Button onClick={goToNextQuestion}>Save & Next</Button>
-                </div>
+               
+                
+                  
               </div>
-            </div>
-          </div>
         </div>
 
         {/* Right Sidebar */}
-        <div className="w-80 border-l bg-background overflow-y-auto">
-          <div className="p-4 space-y-6">
+        <div  className={`w-80 border-l ${rightSidebarOpen ? 'block' : 'hidden'} bg-background  overflow-y-auto`}>
+           
+
+
+          <div className="p-4  space-y-6">
             {/* User Info */}
-            <div className="flex items-center gap-3 p-3 bg-accent rounded-lg">
+            <div className="flex items-center  px-auto px-4 gap-3 p-3 bg-accent rounded-lg">
               <Avatar>
                 <AvatarImage src={user?.avatar || "/placeholder.svg"} />
                 <AvatarFallback>
-                  <User className="h-4 w-4" />
+                  <User className="h-3 w-3" />
                 </AvatarFallback>
               </Avatar>
               <div>
                 <p className="font-medium">{user?.name || "Student"}</p>
-                <p className="text-sm text-muted-foreground">ID: {user?.id || "N/A"}</p>
+                {/* <p className="text-sm text-muted-foreground">ID: {user?.id || "N/A"}</p> */}
               </div>
+             
             </div>
-             { console.log(stats)}
+      
+      
+            {/* {section wise timer} */}
+
+             {exam.settings.allowSectionWiseTiming && (
+              <div className="flex justify-center">
+                {/* {
+                  
+                  console.log("currentSectionIndex", currentSectionIndex,sectionTimeLeft, exam.sections[currentSectionIndex].duration)
+                } */}
+                  <p className="font-medium">{"Time Left : " + formatTime(sectionTimeLeft)}</p>
+             </div>)}
+
+                {/* exam.settings.allowSectionWiseTiming */}
+
+
+             {/* { console.log(stats)} */}
             {/* Question Stats */}
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 bg-green-500 rounded"></div>
-                  <span className="text-sm">Answered</span>
-                </div>
-                <span className="font-medium">{stats.answered}</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 bg-red-500 rounded"></div>
-                  <span className="text-sm">Not Answered</span>
-                </div>
-                <span className="font-medium">{stats.notAnswered}</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 bg-gray-300 rounded"></div>
-                  <span className="text-sm">Not Visited</span>
-                </div>
-                <span className="font-medium">{stats.notVisited}</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 bg-purple-500 rounded"></div>
-                  <span className="text-sm">Marked for Review</span>
-                </div>
-                <span className="font-medium">{stats.markedForReviewCount}</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 bg-orange-500 rounded"></div>
-                  <span className="text-sm">Answered & Marked for Review</span>
-                </div>
-                <span className="font-medium">{stats.answeredAndMarked}</span>
-              </div>
-            </div>
+ <div className="grid grid-cols-2 gap-x-6 gap-y-3">
+  {/* Answered */}
+  <div className="flex items-center gap-3">
+    <div className="min-w-[36px] h-9 bg-green-500 rounded-md flex items-center justify-center text-sm font-medium text-green-900">
+      {stats.answered}
+    </div>
+    <span className="text-sm">Answered</span>
+  </div>
+
+  {/* Not Answered */}
+  <div className="flex items-center gap-3">
+    <div className="min-w-[36px] h-9 bg-red-500 rounded-md flex items-center justify-center text-sm font-medium text-white">
+      {stats.notAnswered}
+    </div>
+    <span className="text-sm">Not Answered</span>
+  </div>
+
+  {/* Not Visited */}
+  <div className="flex items-center gap-3">
+    <div className="min-w-[36px] h-9 bg-gray-200 border border-gray-300 rounded-md flex items-center justify-center text-sm font-medium text-gray-600">
+      {stats.notVisited}
+    </div>
+    <span className="text-sm">Not Visited</span>
+  </div>
+
+  {/* Marked for Review */}
+  <div className="flex items-center gap-3">
+    <div className="min-w-[36px] h-9 bg-purple-600 rounded-md flex items-center justify-center text-sm font-medium text-white">
+      {stats.markedForReviewCount}
+    </div>
+    <span className="text-sm">Marked for Review</span>
+  </div>
+
+  {/* Answered & Marked for Review — full row */}
+  <div className="col-span-2 flex items-center gap-3">
+    <div className="relative min-w-[36px] h-9 bg-green-500 rounded-md flex items-center justify-center text-sm font-medium text-green-900">
+      {stats.answeredAndMarked}
+      <span className="absolute -bottom-1 -right-1 w-3 h-3 bg-purple-600 rounded-sm border-2 border-white" />
+    </div>
+    <span className="text-sm">Answered &amp; Marked for Review</span>
+  </div>
+</div>
 {/* {console.log(currentQuestion, "currentQuestion", currentSection)} */}
             {/* Current Section */}
             <div>
-              <h3 className="font-medium mb-3">{currentSection.name}</h3>
+              <h3 className="font-medium mb-3">{currentSection?.name}</h3>
               <div className="grid grid-cols-4 gap-2">
-                {Array.from({ length: currentSection.questions }, (_, index) => {
+                {Array.from({ length: currentSection?.questions }, (_, index) => {
                   const status = getQuestionStatus(currentSectionIndex, index)
                   return (
                     <Button
@@ -801,8 +1003,9 @@ function stripHtml(html = "") {
       <Dialog open={showSubmitDialog} onOpenChange={setShowSubmitDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Submit Exam</DialogTitle>
-            <DialogDescription>
+            <DialogTitle>{currentSectionIndexRef.current + 1 === exam.sections.length ? "Submit Exam" : `Submit Section ${currentSectionIndexRef.current + 1}`}</DialogTitle>
+          { currentSectionIndexRef.current + 1 === exam.sections.length ?  (<DialogDescription>
+              
               Are you sure you want to submit your exam? You have answered {stats.answered} out of {exam.totalQuestions}{" "}
               questions.
               {stats.notAnswered > 0 && (
@@ -811,18 +1014,24 @@ function stripHtml(html = "") {
                   <span>You have {exam.totalQuestions - stats.answered} unanswered questions.</span>
                 </div>
               )}
-            </DialogDescription>
+            </DialogDescription>)
+            :
+           ( <DialogDescription>
+              
+              Are you sure you want to submit this section? You can not go back!
+             
+            </DialogDescription>)}
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowSubmitDialog(false)}>
               Continue Exam
             </Button>
                 <Button 
-                  onClick={submitExam} 
+                  onClick={()=>{currentSectionIndexRef.current + 1 === exam.sections.length ? submitExam() : handleSectionComplete(true)}} 
                   disabled={submitLoading}
                   className="flex items-center gap-2"
                 >
-                  {submitLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Submit Exam"}
+                  {submitLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Submit"}
                 </Button>
           </DialogFooter>
         </DialogContent>
@@ -846,6 +1055,9 @@ function stripHtml(html = "") {
     </div>
   )
 }
+
+
+
 
 // "use client"
 

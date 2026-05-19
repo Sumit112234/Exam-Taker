@@ -68,16 +68,18 @@ export async function GET(request) {
       stats.recentTrend = Math.round(recentAvg - previousAvg)
     }
 
+    // console.log("results : " , results)
+
     // Format results for frontend
     const formattedResults = results.map((result) => ({
       _id: result._id,
-      examId: result.exam._id,
+      examId: result?.exam?.id,
       exam: {
-        title: result.exam.title,
-        category: result.exam.category,
-        type: result.exam.type,
-        totalMarks: result.exam.totalMarks,
-        totalQuestions: result.exam.totalQuestions,
+        title: result?.exam?.title,
+        category: result?.exam?.category,
+        type: result?.exam?.type,
+        totalMarks: result?.exam?.totalMarks,
+        totalQuestions: result?.exam?.totalQuestions,
       },
       score: result.score,
       obtainedMarks: result.obtainedMarks,

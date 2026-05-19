@@ -98,7 +98,7 @@ export default function ExamsPage() {
 
     const filteredExamsData =  exams?.exams?.filter((exam) => {
       const matchesExamType = (filters.type === "all" || exam.type === filters.type) && (filters.difficulty === "all" || exam.difficulty === filters.difficulty) && (filters.examType === "all" || exam.examName
- === filters.examType)
+ === filters.examType) && (exam.totalQuestions === exam.totalQuestionsUploaded)
 
       const matchesSearch =
         searchQuery === '' ||

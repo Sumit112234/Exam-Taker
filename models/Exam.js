@@ -1,4 +1,5 @@
 import mongoose from "mongoose"
+import { type } from "os"
 
 const examSchema = new mongoose.Schema(
   {
@@ -49,7 +50,7 @@ const examSchema = new mongoose.Schema(
         questions: {
           type: Number,
           required: true,
-          min: 1,
+          
         },
         marks: {
           type: Number,
@@ -128,6 +129,10 @@ const examSchema = new mongoose.Schema(
         type: Boolean,
         default: false,
       },
+      allowSectionWiseTiming : {
+        type: Boolean,
+        default: false,
+      }
     },
     scheduling: {
       startDate: Date,

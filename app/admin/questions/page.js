@@ -81,7 +81,7 @@ export default function QuestionsManagement() {
     sectionName: "",
     questions: "",
     file: null,
-    totalQuestions : 0,
+    totalQuestions: 0,
     uploadedQuestions: 0
   })
 
@@ -139,7 +139,7 @@ export default function QuestionsManagement() {
       if (questionsResponse.ok) {
         const questionsData = await questionsResponse.json()
         console.log("Questions fetched:", questionsData)
-        setPagination(questionsData.pagination )
+        setPagination(questionsData.pagination)
         setQuestions(questionsData.questions || [])
       }
     } catch (error) {
@@ -251,10 +251,61 @@ export default function QuestionsManagement() {
   }
 
   const fetchSectionsByExam = async (examId) => {
+  try {
+    const response = await fetch(`/api/admin/exams/${examId}/sections`);
+
+    if (response.ok) {
+      const data = await response.json();
+
+      console.log("Original sections:", data);
+
+      // Calculate totals
+      const totalDuration = data.reduce(
+        (sum, section) => sum + (section.duration || 0),
+        0
+      );
+
+      const totalMarks = data.reduce(
+        (sum, section) => sum + (section.marks || 0),
+        0
+      );
+
+      const totalQuestions = data.reduce(
+        (sum, section) => sum + (section.questions || 0),
+        0
+      );
+
+      // Create extra section object
+      const overallSection = {
+        duration: totalDuration,
+        id: "overall_section",
+        marks: totalMarks,
+        name: "Overall",
+        negativeMarks: 0.25,
+        questionIds: [],
+        questions: totalQuestions,
+        sectionId: "overall_section",
+        _id: "overall_section",
+      };
+
+      // Add extra object into array
+      const updatedSections = [...data, overallSection];
+
+      console.log("Updated sections:", updatedSections);
+
+      setAvailableSections(updatedSections);
+    }
+  } catch (error) {
+    console.error("Error fetching sections:", error);
+  }
+};
+
+  const fetchSectionsByExam2 = async (examId) => {
     try {
       const response = await fetch(`/api/admin/exams/${examId}/sections`)
       if (response.ok) {
         const data = await response.json()
+        console.log("Fetch sections response:", data)
         setAvailableSections(data)
       }
     } catch (error) {
@@ -330,11 +381,15 @@ export default function QuestionsManagement() {
         formData.append("questions", bulkUploadData.questions)
       }
 
+
       formData.append("category", bulkUploadData.category)
       formData.append("examId", bulkUploadData.examId)
       formData.append("sectionId", bulkUploadData.sectionId)
       formData.append("examName", bulkUploadData.examName)
       formData.append("sectionName", bulkUploadData.sectionName)
+
+
+      console.log("Submitting bulk upload with data:", formData)
 
       const response = await fetch("/api/admin/questions/bulk-upload", {
         method: "POST",
@@ -367,7 +422,7 @@ export default function QuestionsManagement() {
       console.error("Error uploading questions:", error)
       alert("Error uploading questions")
     }
-    finally{
+    finally {
       setUploadLoading(false);
     }
   }
@@ -515,39 +570,39 @@ export default function QuestionsManagement() {
                             <SelectValue placeholder="Select exam" />
                           </SelectTrigger>
                           <SelectContent>
-                            {console.log("Available exams:", availableExams)}
+                            {/* {console.log("Available exams:", availableExams)} */}
 
-{availableExams.map((exam) => {
-  const totalQuestions = exam.maxQuestions;
-  const uploadedQuestions = exam.sections?.reduce((sum, sec) => sum + (sec.questionIds?.length || 0), 0)
+                            {availableExams.map((exam) => {
+                              const totalQuestions = exam.maxQuestions;
+                              const uploadedQuestions = exam.sections?.reduce((sum, sec) => sum + (sec.questionIds?.length || 0), 0)
 
-  const isAllUploaded = uploadedQuestions >= totalQuestions 
-  const isNoneUploaded = uploadedQuestions === 0
-  const isPartiallyUploaded = uploadedQuestions > 0 && uploadedQuestions < totalQuestions
+                              const isAllUploaded = uploadedQuestions >= totalQuestions
+                              const isNoneUploaded = uploadedQuestions === 0
+                              const isPartiallyUploaded = uploadedQuestions > 0 && uploadedQuestions < totalQuestions
 
-  return (
-    <SelectItem key={exam._id} value={exam._id}>
-      <div className="flex items-center justify-between w-full gap-6 px-2 py-1">
-        {/* Title + Subject */}
-        <div className="flex flex-col">
-          <p className="font-medium text-sm">{exam.title}</p>
-          {/* <p className="text-xs text-muted-foreground">({exam.subject})</p> */}
-        </div>
+                              return (
+                                <SelectItem key={exam._id} value={exam._id}>
+                                  <div className="flex items-center justify-between w-full gap-6 px-2 py-1">
+                                    {/* Title + Subject */}
+                                    <div className="flex flex-col">
+                                      <p className="font-medium text-sm">{exam.title}</p>
+                                      {/* <p className="text-xs text-muted-foreground">({exam.subject})</p> */}
+                                    </div>
 
-        {/* Question count or status */}
-        <div className="flex items-center gap-2">
-          {isPartiallyUploaded && (
-            <span className="text-sm font-medium text-gray-600">
-              {uploadedQuestions}/{totalQuestions}
-            </span>
-          )}
-          {isAllUploaded && <span className="w-3 h-3 rounded-full bg-green-500"></span>}
-          {isNoneUploaded && <span className="w-3 h-3 rounded-full bg-red-500"></span>}
-        </div>
-      </div>
-    </SelectItem>
-  )
-})}
+                                    {/* Question count or status */}
+                                    <div className="flex items-center gap-2">
+                                      {isPartiallyUploaded && (
+                                        <span className="text-sm font-medium text-gray-600">
+                                          {uploadedQuestions}/{totalQuestions}
+                                        </span>
+                                      )}
+                                      {isAllUploaded && <span className="w-3 h-3 rounded-full bg-green-500"></span>}
+                                      {isNoneUploaded && <span className="w-3 h-3 rounded-full bg-red-500"></span>}
+                                    </div>
+                                  </div>
+                                </SelectItem>
+                              )
+                            })}
 
                           </SelectContent>
                         </Select>
@@ -563,7 +618,7 @@ export default function QuestionsManagement() {
                             setBulkUploadData({
                               ...bulkUploadData,
                               sectionId: value,
-                              sectionName: selectedSection?.name || "",
+                              sectionName: selectedSection?.name || "all",
                               totalQuestions: selectedSection?.questions || 0,
                               uploadedQuestions: selectedSection?.questionIds?.length || 0,
                             })
@@ -598,15 +653,15 @@ export default function QuestionsManagement() {
                           <p>
                             <strong>Section:</strong> {bulkUploadData.sectionName}
                           </p>
-                        
+
                           <p>
                             <strong>Total Questions:</strong> {bulkUploadData.totalQuestions}
                           </p>
-                        
+
                           <p>
                             <strong>Uploaded Questions:</strong> {bulkUploadData.uploadedQuestions}
                           </p>
-                        
+
                         </div>
                       </div>
                     )}
@@ -643,6 +698,7 @@ export default function QuestionsManagement() {
   {
     "subject": "Mathematics",
     "topic": "Algebra",
+    "sectionName" : "Section 1",
     "questionText": "What is 2 + 2?",
     "type": "mcq",
     "options": ["2", "3", "4", "5"],
@@ -1394,7 +1450,7 @@ export default function QuestionsManagement() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-              {console.log("Filtered Questions:", filteredQuestions)}
+                {/* {console.log("Filtered Questions:", filteredQuestions)} */}
                 {filteredQuestions.map((question) => (
                   <TableRow key={question._id}>
                     <TableCell>

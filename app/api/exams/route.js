@@ -65,11 +65,6 @@ export async function GET(request) {
         path: "category",
         select: "name code icon color",
       })
-      .populate({
-        path: "sections.questionIds",
-        select: "question questionType marks difficulty subject topic",
-        options: { limit: 1 }, // Just to check if questions exist
-      })
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
@@ -82,6 +77,11 @@ export async function GET(request) {
       const totalQuestions =
         exam.sections?.reduce((total, section) => {
           return total + (section.questions || 0)
+        }, 0) || 0
+
+      const totalQuestionsUploaded =
+        exam.sections?.reduce((total, section) => {
+          return total + (section?.questionIds?.length || 0)
         }, 0) || 0
 
       // Calculate total marks from sections
@@ -98,7 +98,7 @@ export async function GET(request) {
         exam.totalDuration ||
         0
 
-              console.log("Exams section after  :",  exam.sections)
+              console.log("Exams section after  :",  exam.sections,totalQuestions,totalQuestionsUploaded)
       return {
         _id: exam._id,
         title: exam.title,
@@ -108,6 +108,7 @@ export async function GET(request) {
         type: exam.type,
         difficulty: exam.difficulty,
         totalQuestions,
+        totalQuestionsUploaded,
         totalMarks,
         totalDuration,
         passingMarks: exam.passingMarks,
@@ -120,6 +121,7 @@ export async function GET(request) {
             duration: section.duration,
             totalMarks: section.marks,
             questionCount: section.questions || 0,
+            questionIds: section.questionIds || [],
           })) || [],
         settings: exam.settings,
         visibility: exam.visibility,

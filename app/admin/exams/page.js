@@ -31,7 +31,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { useToast } from "@/components/ui/use-toast"
-import { Plus, Trash2, FileText, Search, MoreVertical, Pencil, Eye, BookOpen, Clock } from "lucide-react"
+import { Plus, Trash2, FileText, Search, MoreVertical, Pencil, Eye, BookOpen, Clock, Copy } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
 
 export default function ExamsPage() {
@@ -41,6 +41,7 @@ export default function ExamsPage() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+  const [isDuplicateDialogOpen, setIsDuplicateDialogOpen] = useState(false)
   const [selectedExam, setSelectedExam] = useState(null)
   const [searchQuery, setSearchQuery] = useState("")
   const [filters, setFilters] = useState({
@@ -71,6 +72,7 @@ export default function ExamsPage() {
       autoSubmit: true,
       showTimer: true,
       fullScreen: false,
+      allowSectionWiseTiming : false,
     },
     visibility: {
       isPublished: false,
@@ -205,6 +207,8 @@ export default function ExamsPage() {
   }
 
   const handleUpdateExam = async () => {
+    console.log("Updating exam with data:", formData)
+    // return ;
     try {
       const response = await fetch(`/api/admin/exams/${selectedExam._id}`, {
         method: "PUT",
@@ -260,7 +264,7 @@ export default function ExamsPage() {
     }
   }
 
-  const openEditDialog = (exam) => {
+  const openEditDialog = (exam, isduplicated = false) => {
     setSelectedExam(exam)
     setFormData({
       title: exam.title,
@@ -281,6 +285,58 @@ export default function ExamsPage() {
     })
     setIsEditDialogOpen(true)
   }
+  
+  const openDuplicateDialog = (exam, isduplicated = false) => {
+    setSelectedExam(exam)
+    setFormData({
+      title: exam.title,
+      category: exam.category._id,
+      examName: exam.examName,
+      type: exam.type,
+      description: exam.description || "",
+      instructions: exam.instructions || "Read all questions carefully before answering.",
+      totalDuration: exam.totalDuration,
+      totalMarks: exam.totalMarks,
+      passingMarks: exam.passingMarks,
+      negativeMarking: exam.negativeMarking,
+      settings: exam.settings,
+      visibility: exam.visibility,
+      sections: exam.sections || [],
+      difficulty: exam.difficulty || "Medium",
+      tags: exam.tags || [],
+    })
+    setIsDuplicateDialogOpen(true)
+  }
+
+
+
+  const deleteAllQuestions = async (exam) => {
+    try {
+          const response = await fetch(`/api/admin/exams/${exam._id}/questions`, {
+            method: "DELETE",
+          })
+
+          if (response.ok) {
+            setExams(exams.filter((exam) => exam._id !== selectedExam._id))
+           
+            toast({
+              title: "Success",
+              description: "All questions deleted successfully",
+            })
+          } else {
+            const error = await response.json()
+            throw new Error(error.message || "Failed to delete questions")
+          }
+        } catch (error) {
+          toast({
+            title: "Error",
+            description: error.message,
+            variant: "destructive",
+          })
+        }
+
+  }
+
 
   const openDeleteDialog = (exam) => {
     setSelectedExam(exam)
@@ -406,7 +462,7 @@ export default function ExamsPage() {
     setCurrentStep((prev) => Math.max(prev - 1, 1))
   }
 
-  const renderCreateExamForm = () => {
+  const renderCreateExamForm = (isEdit = false) => {
     return (
       <div className="space-y-4">
         <div className="flex justify-between items-center">
@@ -594,6 +650,7 @@ export default function ExamsPage() {
                       <SelectItem value="0.33">0.33</SelectItem>
                       <SelectItem value="0.5">0.5</SelectItem>
                       <SelectItem value="1">1</SelectItem>
+                      <SelectItem value="0">0</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -683,26 +740,31 @@ export default function ExamsPage() {
                             onChange={(e) => handleSectionChange(index, "marks", Number.parseInt(e.target.value))}
                           />
                         </div>
-                        <div className="space-y-2">
-                          <Label>Negative Marks</Label>
-                          <Select
-                            value={section.negativeMarks.toString()}
-                            onValueChange={(value) =>
-                              handleSectionChange(index, "negativeMarks", Number.parseFloat(value))
+ <div className="space-y-2">
+                          <Label>Negative: Marks</Label>
+                          <Input
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            list={`negative-marks-options-${index}`}
+                            value={section.negativeMarks}
+                            onChange={(e) =>
+                              handleSectionChange(
+                                index,
+                                "negativeMarks",
+                                Number.parseFloat(e.target.value || "0"),
+                              )
                             }
                             disabled={!formData.negativeMarking.enabled}
-                          >
-                            <SelectTrigger>
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="0">0</SelectItem>
-                              <SelectItem value="0.25">0.25</SelectItem>
-                              <SelectItem value="0.33">0.33</SelectItem>
-                              <SelectItem value="0.5">0.5</SelectItem>
-                              <SelectItem value="1">1</SelectItem>
-                            </SelectContent>
-                          </Select>
+                            placeholder="e.g., 0.2"
+                          />
+                          <datalist id={`negative-marks-options-${index}`}>
+                            <option value="0" />
+                            <option value="0.25" />
+                            <option value="0.33" />
+                            <option value="0.5" />
+                            <option value="1" />
+                          </datalist>
                         </div>
                       </div>
                     </CardContent>
@@ -810,6 +872,14 @@ export default function ExamsPage() {
                     onCheckedChange={(checked) => handleNestedInputChange("settings", "fullScreen", checked)}
                   />
                 </div>
+                <div className="flex items-center justify-between space-x-2 pr-4">
+                  <Label htmlFor="allowSectionWiseTiming">Allow Section-wise Timing</Label>
+                  <Switch
+                    id="allowSectionWiseTiming"
+                    checked={formData.settings.allowSectionWiseTiming}
+                    onCheckedChange={(checked) => handleNestedInputChange("settings", "allowSectionWiseTiming", checked)}
+                  />
+                </div>
               </div>
             </div>
 
@@ -871,7 +941,9 @@ export default function ExamsPage() {
             {currentStep < 3 ? (
               <Button onClick={nextStep}>Next</Button>
             ) : (
-              <Button onClick={handleCreateExam}>Create Exam</Button>
+              <Button onClick={isEdit ? handleUpdateExam : handleCreateExam}>
+                {isEdit ? "Update Exam" : "Create Exam"}
+              </Button>
             )}
           </div>
         </div>
@@ -1059,6 +1131,14 @@ export default function ExamsPage() {
                               <Pencil className="mr-2 h-4 w-4" />
                               Edit Exam
                             </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => openDuplicateDialog(exam)}>
+                              <Copy className="mr-2 h-4 w-4" />
+                              Duplicate Exam
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => deleteAllQuestions(exam)}>
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              Delete All Questions
+                            </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => openDeleteDialog(exam)} className="text-red-600">
                               <Trash2 className="mr-2 h-4 w-4" />
                               Delete Exam
@@ -1096,6 +1176,16 @@ export default function ExamsPage() {
             <DialogTitle>Edit Exam</DialogTitle>
             <DialogDescription>Update exam configuration and settings</DialogDescription>
           </DialogHeader>
+          {renderCreateExamForm(true)}
+        </DialogContent>
+      </Dialog>
+      {/* Duplicate Exam Dialog */}
+      <Dialog open={isDuplicateDialogOpen} onOpenChange={setIsDuplicateDialogOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Duplicate Exam</DialogTitle>
+            <DialogDescription>Create a copy of the selected exam</DialogDescription>
+          </DialogHeader>
           {renderCreateExamForm()}
         </DialogContent>
       </Dialog>
@@ -1114,6 +1204,7 @@ export default function ExamsPage() {
             <AlertDialogAction onClick={handleDeleteExam} className="bg-red-600 hover:bg-red-700">
               Delete
             </AlertDialogAction>
+            
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
