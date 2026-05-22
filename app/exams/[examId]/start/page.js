@@ -24,6 +24,7 @@ import { useAuth } from "@/contexts/AuthContext"
 import { useToast } from "@/hooks/use-toast"
 import { constructFromSymbol } from "date-fns/constants"
 
+
 export default function TakeExam({ params }) {
   const router = useRouter()
   const { user } = useAuth()
@@ -644,6 +645,7 @@ function stripHtml(html = "") {
   const textarea = document.createElement("textarea");
   textarea.innerHTML = withBreaks;
 
+
   return textarea.value.trim();
 }
 
@@ -771,9 +773,19 @@ function stripHtml(html = "") {
                   <CardContent className="pt-6 flex h-screen  ">
                     <div className={`w-1/2 p-3 ${(currentQuestion.passage || currentQuestion.questionImage) ? '' : 'hidden'}`}>
                         {currentQuestion.passage && (
-                        <div className="bg-gray-50 p-4 rounded-lg border whitespace-pre-line">
+                        <div className="bg-gray-50 p-4 rounded-lg border leading-6 text-justify whitespace-pre-line"
+                        >
                         {stripHtml(currentQuestion.passage)}
                       </div>
+                      )}
+                      {currentQuestion.passageImage && (
+                        <div className="my-4">
+                          <img
+                            src={currentQuestion.passageImage || "/placeholder.svg"}
+                            alt="Question"
+                            className="max-w-full h-auto rounded-lg border"
+                          />
+                        </div>
                       )}
                       {currentQuestion.questionImage && (
                         <div className="my-4">

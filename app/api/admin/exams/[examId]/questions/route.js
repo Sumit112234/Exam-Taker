@@ -78,8 +78,8 @@ export async function DELETE(request, { params }) {
 
   // ✅ Direct mutation instead of map+spread
   exam.sections.forEach((section) => {
-    section.questionIds = undefined
-    section.questions = 0
+    section.questionIds = []
+    
   })
 
   exam.totalQuestions = 0

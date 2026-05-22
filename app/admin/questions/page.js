@@ -694,7 +694,8 @@ export default function QuestionsManagement() {
                         <div className="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
                           <h4 className="font-medium mb-2">Expected JSON Format:</h4>
                           <pre className="text-xs text-muted-foreground overflow-x-auto">
-                            {`[
+           
+                           {`[
   {
     "subject": "Mathematics",
     "topic": "Algebra",

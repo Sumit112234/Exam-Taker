@@ -2,9 +2,18 @@
 
 import { useState, useCallback } from "react";
 
-// ─── Transformation Logic ──────────────────────────────────────────────────────
 
-const DIFFICULTY_MAP = { "0": "Easy", "1": "Easy", "2": "Medium", "3": "Hard" };
+// --------------------------NEW--------------------------------
+
+const DIFFICULTY_MAP = { 
+  "0": "Easy", 
+  "1": "Easy", 
+  "2": "Medium", 
+  "3": "Hard",
+  "Prelims": "Easy",
+  "Mains": "Medium",
+  "Advanced": "Hard"
+};
 
 /** Extract first img src URL from HTML string */
 function extractFirstImage(html = "") {
@@ -52,11 +61,25 @@ function detectType(q) {
 
 function transformData(rawData) {
   const result = [];
-  for (const section of rawData) {
-    const sectionName = section.section_name;
-    const questions = section.questions?.english || [];
+  
+  // Ensure rawData is an array
+  const sections = Array.isArray(rawData) ? rawData : [rawData];
+  
+  for (const section of sections) {
+    // Support both old format (section_name) and new format (name)
+    const sectionName = section.name || section.section_name;
+    
+    // Support both old format (questions.english) and new format (mock_questions.english)
+    const questions = section.mock_questions?.english || 
+                     section.questions?.english || 
+                     section.mock_questions?.hindi || 
+                     section.questions?.hindi || 
+                     [];
 
     for (const q of questions) {
+      // Skip if question is empty or undefined
+      if (!q || !q.question) continue;
+      
       // Options are plain text in source
       const options = (q.options || []).map((o) => htmlToPlain(String(o)));
       const correctAnswer = resolveCorrectAnswer(q.answer, q.options);
@@ -76,6 +99,13 @@ function transformData(rawData) {
       const explanationImage = extractFirstImage(explRaw);
       const explanation = explRaw ? removeImgTags(explRaw) : undefined;
 
+      // Determine difficulty from level_type field
+      let difficulty = DIFFICULTY_MAP[String(q.level_type)] || "Medium";
+      
+      // Parse marks - handle both string and number formats
+      const marks = parseFloat(q.plus_mark) || 1;
+      const negativeMarks = parseFloat(q.minus_mark) || 0.25;
+
       const transformed = {
         sectionName,
         subject: sectionName,
@@ -89,10 +119,10 @@ function transformData(rawData) {
         correctAnswer,
         ...(explanation && { explanation }),
         ...(explanationImage && { explanationImage }),
-        marks: parseFloat(q.plus_mark) || 1,
-        negativeMarks: parseFloat(q.minus_mark) || 0.25,
-        difficulty: DIFFICULTY_MAP[String(q.level_type)] || "Medium",
-        isActive: q.status !== false,
+        marks,
+        negativeMarks,
+        difficulty,
+        isActive: q.status !== false && q.status !== "0",
         // internal — stripped on export
         _sourceId: q.id,
         _sno: q.sno,
@@ -103,6 +133,116 @@ function transformData(rawData) {
   }
   return result;
 }
+
+
+
+// -----------------------OLD------------------------------
+
+
+
+
+
+// ─── Transformation Logic ──────────────────────────────────────────────────────
+
+// const DIFFICULTY_MAP = { "0": "Easy", "1": "Easy", "2": "Medium", "3": "Hard" };
+
+// /** Extract first img src URL from HTML string */
+// function extractFirstImage(html = "") {
+//   const m = /<img[^>]+src=["']([^"']+)["']/i.exec(html);
+//   return m ? m[1] : undefined;
+// }
+
+// /** Remove <img> tags from HTML — image stored separately */
+// function removeImgTags(html = "") {
+//   return html.replace(/<img[^>]*\/?>/gi, "").trim();
+// }
+
+// /** Strip ALL tags — used only for plain-text comparison / preview snippets */
+// function htmlToPlain(html = "") {
+//   return html
+//     .replace(/<[^>]*>/g, "")
+//     .replace(/&nbsp;/g, " ")
+//     .replace(/&le;/g, "≤").replace(/&ge;/g, "≥")
+//     .replace(/&gt;/g, ">").replace(/&lt;/g, "<")
+//     .replace(/&amp;/g, "&")
+//     .replace(/&rsquo;|&lsquo;/g, "'")
+//     .replace(/&ldquo;|&rdquo;/g, '"')
+//     .replace(/&shy;/g, "")
+//     .trim();
+// }
+
+// /** Resolve answer index → option text (options in source are plain strings) */
+// function resolveCorrectAnswer(answerIndex, rawOptions) {
+//   const idx = parseInt(answerIndex, 10);
+//   if (!isNaN(idx) && rawOptions?.[idx] !== undefined) {
+//     return htmlToPlain(String(rawOptions[idx]));
+//   }
+//   return String(answerIndex);
+// }
+
+// function detectType(q) {
+//   const plain = htmlToPlain(q.question || "").toLowerCase();
+//   if (plain.includes("fill in the blank") || !q.options?.length) return "fill-in-the-blank";
+//   if (q.options?.length === 2) {
+//     const opts = q.options.map((o) => htmlToPlain(String(o)).toLowerCase());
+//     if (opts.includes("true") && opts.includes("false")) return "true-false";
+//   }
+//   return "mcq";
+// }
+
+// function transformData(rawData) {
+//   const result = [];
+//   for (const section of rawData) {
+//     const sectionName = section.section_name;
+//     const questions = section.questions?.english || [];
+
+//     for (const q of questions) {
+//       // Options are plain text in source
+//       const options = (q.options || []).map((o) => htmlToPlain(String(o)));
+//       const correctAnswer = resolveCorrectAnswer(q.answer, q.options);
+
+//       // questionText: preserve HTML (bold, sup/sub, tables…) — strip only <img>
+//       const questionRaw = q.question || "";
+//       const questionImage = extractFirstImage(questionRaw);
+//       const questionText = removeImgTags(questionRaw);
+
+//       // passage / common_data: preserve HTML (may contain charts, diagrams)
+//       const passageRaw = q.common_data || "";
+//       const passageImage = extractFirstImage(passageRaw);
+//       const passage = passageRaw ? removeImgTags(passageRaw) : undefined;
+
+//       // explanation: preserve HTML (may contain solution images)
+//       const explRaw = q.explanation || "";
+//       const explanationImage = extractFirstImage(explRaw);
+//       const explanation = explRaw ? removeImgTags(explRaw) : undefined;
+
+//       const transformed = {
+//         sectionName,
+//         subject: sectionName,
+//         type: detectType(q),
+//         // HTML preserved — rendering uses dangerouslySetInnerHTML
+//         questionText,
+//         ...(questionImage && { questionImage }),
+//         ...(passage && { passage }),
+//         ...(passageImage && { passageImage }),
+//         options,
+//         correctAnswer,
+//         ...(explanation && { explanation }),
+//         ...(explanationImage && { explanationImage }),
+//         marks: parseFloat(q.plus_mark) || 1,
+//         negativeMarks: parseFloat(q.minus_mark) || 0.25,
+//         difficulty: DIFFICULTY_MAP[String(q.level_type)] || "Medium",
+//         isActive: q.status !== false,
+//         // internal — stripped on export
+//         _sourceId: q.id,
+//         _sno: q.sno,
+//       };
+
+//       result.push(transformed);
+//     }
+//   }
+//   return result;
+// }
 
 // ─── UI Helpers ────────────────────────────────────────────────────────────────
 

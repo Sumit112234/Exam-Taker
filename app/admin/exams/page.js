@@ -154,6 +154,8 @@ export default function ExamsPage() {
 
   const handleCreateExam = async () => {
     // console.log("Creating exam with data:", formData)
+    // return; 
+
     if(formData.sections.length === 0){
       alert("At least one section is required")
       return ;
@@ -288,7 +290,16 @@ export default function ExamsPage() {
   
   const openDuplicateDialog = (exam, isduplicated = false) => {
     setSelectedExam(exam)
-    setFormData({
+
+      let sections = exam.sections.map(({ id, _id, ...section }) => ({
+        ...section,
+        sectionId: `section_${Date.now()}_${Math.random()
+          .toString(36)
+          .slice(2, 6)}`,
+        questionIds: [],
+      }))
+
+    let data = {
       title: exam.title,
       category: exam.category._id,
       examName: exam.examName,
@@ -301,10 +312,13 @@ export default function ExamsPage() {
       negativeMarking: exam.negativeMarking,
       settings: exam.settings,
       visibility: exam.visibility,
-      sections: exam.sections || [],
+      sections: sections || [],
       difficulty: exam.difficulty || "Medium",
       tags: exam.tags || [],
-    })
+    }
+
+    setFormData(data)
+    console.log(data)
     setIsDuplicateDialogOpen(true)
   }
 
