@@ -634,6 +634,14 @@ const startTimer = (onlySection = false) => {
     return { answered, notAnswered, notVisited, markedForReviewCount, answeredAndMarked }
   }
 
+  
+  function cleanHtml(html = "") {
+  return html
+    .replace(/<\/p>/gi, "</p><br/>")
+    .replace(/<br\s*\/?>/gi, "<br/>")
+    .replace(/<(?!\/?(strong|br|p)\b)[^>]*>/gi, "");
+}
+
 function stripHtml(html = "") {
  // Step 1: remove tags but keep structure
   const withBreaks = html
@@ -773,11 +781,20 @@ function stripHtml(html = "") {
                   <CardContent className="pt-6 flex h-screen  ">
                     <div className={`w-1/2 p-3 ${(currentQuestion.passage || currentQuestion.questionImage) ? '' : 'hidden'}`}>
                         {currentQuestion.passage && (
+                          <div
+                            className="bg-gray-50 p-4 rounded-lg border leading-6 text-justify"
+                            dangerouslySetInnerHTML={{
+                              __html: cleanHtml(currentQuestion.passage),
+                            }}
+                          />
+                        )}
+                        
+                        {/* {currentQuestion.passage && (
                         <div className="bg-gray-50 p-4 rounded-lg border leading-6 text-justify whitespace-pre-line"
                         >
                         {stripHtml(currentQuestion.passage)}
                       </div>
-                      )}
+                      )} */}
                       {currentQuestion.passageImage && (
                         <div className="my-4">
                           <img
@@ -800,9 +817,16 @@ function stripHtml(html = "") {
                     </div>
 
                     <div className={`space-y-4 ${(currentQuestion.passage || currentQuestion.questionImage) ? 'w-1/2' : ''}  p-3 h-fit `}>
-                     <div className="text-lg leading-relaxed">
+                     {/* <div className="text-lg leading-relaxed">
                           {decodeHtmlEntities(currentQuestion.questionText)}
-                      </div>
+                      </div> */}
+                     <div
+                        className="text-lg leading-relaxed"
+                        dangerouslySetInnerHTML={{
+                          __html: cleanHtml(currentQuestion.questionText),
+                        }}
+                      />
+
 
                       {currentQuestion.questionTextHindi && (
                         <div className="text-lg leading-relaxed text-gray-700 border-t pt-4">
