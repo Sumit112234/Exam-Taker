@@ -467,9 +467,10 @@ export default function DataConverterPage() {
   }, [rawInput]);
 
   const getClean = () =>
-    (transformed || []).map(({ _sourceId, _sno, ...rest }) => rest);
+    (filtered || []).map(({ _sourceId, _sno, ...rest }) => rest);
 
   const handleCopy = () => {
+    // console.log(filtered)
     navigator.clipboard.writeText(JSON.stringify(getClean(), null, 2)).then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);

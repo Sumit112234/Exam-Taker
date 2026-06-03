@@ -136,7 +136,7 @@ export default function ExamsPage() {
       const response = await fetch(`/api/admin/exams?${params}`)
       if (response.ok) {
         const data = await response.json()
-        // console.log(data)
+        console.log(data)
         setExams(data)
       } else {
         throw new Error("Failed to fetch exams")
