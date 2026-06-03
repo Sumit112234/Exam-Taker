@@ -115,7 +115,7 @@ export default function ExamDetails({ params }) {
 
   return (
     <div className="min-h-screen px-10 bg-gradient-to-br from-blue-50 via-white to-blue-100 dark:from-blue-950 dark:via-gray-900 dark:to-blue-900">
-      <div className="container py-6">
+      <div className="container py-6 ">
         {/* Header */}
         <div className="flex items-center gap-4 mb-6">
           <Button variant="outline" size="icon" onClick={() => router.back()}>

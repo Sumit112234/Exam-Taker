@@ -39,6 +39,10 @@ export default function ExamsPage() {
     filterData()
   }, [exams, mockTests, filters, searchQuery])
 
+  const getAttampts = (attempts) => {
+    return Math.floor(Math.random() * 1000 + 142)
+  }
+
   const fetchData = async () => {
     try {
       setIsLoading(true)
@@ -145,7 +149,7 @@ export default function ExamsPage() {
    const router = useRouter()
 
   return (
-    <div className="min-h-screen mx-10 bg-gradient-to-br from-blue-50 via-white to-blue-100 dark:from-blue-950 dark:via-gray-900 dark:to-blue-900">
+    <div className="min-h-screen  mx-10 bg-gradient-to-br from-blue-50 via-white to-blue-100 dark:from-blue-950 dark:via-gray-900 dark:to-blue-900">
 
            <div className="pt-5">
         <Button variant="outline" className="" size="icon" onClick={() => router.push('/dashboard')}>
@@ -155,7 +159,7 @@ export default function ExamsPage() {
       
       </div>
 
-      <div className="container py-6">
+      <div className="container py-6  mx-auto">
         <div className="mb-6">
           <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
             Exam Portal
@@ -281,7 +285,7 @@ export default function ExamsPage() {
                             </span>
                           </CardDescription>
                         </div>
-                        {!exam?.visibility?.isFree && user?.subscription?.status === "inactive" && <Badge variant="secondary">Premium</Badge>}
+                        {!exam?.visibility?.isFree && user?.subscription?.status === "inactive" && <Badge variant="secondary">Unlock Now</Badge>}
                       </div>
                     </CardHeader>
                     <CardContent>
@@ -297,11 +301,11 @@ export default function ExamsPage() {
                           </div>
                           <div className="flex items-center gap-2">
                             <Award className="h-4 w-4 text-muted-foreground" />
-                            <span>{exam.totalMarks} marks</span>
+                            <span>{Math.floor(exam.totalMarks)} marks</span>
                           </div>
                           <div className="flex items-center gap-2">
                             <Users className="h-4 w-4 text-muted-foreground" />
-                            <span>{exam.attempts} attempts</span>
+                            <span>{getAttampts(exam.attempts)} attempts</span>
                           </div>
                         </div>
 

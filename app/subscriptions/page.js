@@ -110,11 +110,11 @@ export default function Subscriptions() {
 
 
   return (
-    <div className="container py-6">
+    <div className="container py-6 mx-auto">
                 <Button variant="outline" className="ml-4" size="icon" onClick={() => router.back()}>
             <ArrowLeft className="h-4 w-4 " />
           </Button>
-      <div className="mb-8 text-center">
+      <div className="mb-8 text-center ">
         <h1 className="text-3xl font-bold tracking-tight">Choose Your Plan</h1>
         <p className="text-muted-foreground mt-2">Unlock premium features and take unlimited exams</p>
       </div>

@@ -79,8 +79,8 @@ export default function Contact() {
   const router = useRouter()
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100 dark:from-blue-950 dark:via-gray-900 dark:to-blue-900">
-      <div className="container py-12">
+    <div className="min-h-screen bg-gradient-to-br  from-blue-50 via-white to-blue-100 dark:from-blue-950 dark:via-gray-900 dark:to-blue-900">
+      <div className="container py-12 mx-auto">
         <Button variant="outline" className="ml-4" size="icon" onClick={() => router.back()}>
             <ArrowLeft className="h-4 w-4 " />
           </Button>
