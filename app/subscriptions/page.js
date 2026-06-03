@@ -8,11 +8,22 @@ import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Check, Star, AlertCircle, ArrowLeft } from "lucide-react"
-import { loadStripe } from "@stripe/stripe-js"
 import { useRouter } from "next/navigation"
 
-
-const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY)
+// Load Razorpay script
+const loadRazorpay = () => {
+  return new Promise((resolve) => {
+    const script = document.createElement("script")
+    script.src = "https://checkout.razorpay.com/v1/checkout.js"
+    script.onload = () => {
+      resolve(true)
+    }
+    script.onerror = () => {
+      resolve(false)
+    }
+    document.body.appendChild(script)
+  })
+}
 
 export default function Subscriptions() {
   const [subscriptions, setSubscriptions] = useState([])
@@ -72,6 +83,14 @@ export default function Subscriptions() {
     setIsLoading(true)
 
     try {
+      // Load Razorpay script
+      const razorpayLoaded = await loadRazorpay()
+      if (!razorpayLoaded) {
+        alert("Failed to load Razorpay. Please try again.")
+        setIsLoading(false)
+        return
+      }
+
       const response = await fetch("/api/payment/create-checkout-session", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -83,12 +102,35 @@ export default function Subscriptions() {
 
       const data = await response.json()
 
-      if (response.ok) {
-        const stripe = await stripePromise
-        await stripe.redirectToCheckout({ sessionId: data.sessionId })
-      } else {
-        alert(data.message || "Error creating checkout session")
+      if (!response.ok) {
+        alert(data.message || "Error creating payment order")
+        setIsLoading(false)
+        return
       }
+
+      // Open Razorpay modal
+      const options = {
+        key: data.keyId,
+        amount: data.amount,
+        currency: data.currency,
+        name: "Exam Taker",
+        description: `Subscribe to ${data.subscriptionName}`,
+        order_id: data.orderId,
+        handler: function (response) {
+          // Payment successful
+          console.log("Payment successful", response)
+          router.push(`/payment/success?order_id=${data.orderId}&payment_id=${response.razorpay_payment_id}`)
+        },
+        prefill: {
+          email: "",
+        },
+        theme: {
+          color: "#3b82f6",
+        },
+      }
+
+      const razorpay = new window.Razorpay(options)
+      razorpay.open()
     } catch (error) {
       console.error("Error:", error)
       alert("Error processing payment")
@@ -216,7 +258,7 @@ export default function Subscriptions() {
 
       <div className="text-center mt-8 text-sm text-muted-foreground">
         <p>All plans include a 30-day money-back guarantee</p>
-        <p>Secure payment powered by Stripe</p>
+        <p>Secure payment powered by Razorpay</p>
       </div>
     </div>
   )

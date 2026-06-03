@@ -4,7 +4,7 @@ import Subscription from "@/models/Subscription"
 import Coupon from "@/models/Coupon"
 import User from "@/models/User"
 import { getCurrentUser } from "@/lib/auth"
-import stripe from "@/lib/stripe"
+import razorpay from "@/lib/razorpay"
 
 export async function POST(request) {
   try {
@@ -89,68 +89,40 @@ export async function POST(request) {
       })
     }
 
-    // Create Stripe checkout session for paid subscriptions
-    const isTestMode = process.env.STRIPE_SECRET_KEY?.startsWith("sk_test_")
+    // Create Razorpay order for paid subscriptions
     const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000"
 
-    const sessionConfig = {
-      payment_method_types: ["card"],
-      line_items: [
-        {
-          price_data: {
-            currency: "usd",
-            product_data: {
-              name: `${subscription.name}${isTestMode ? " (Test Mode)" : ""}`,
-              description: subscription.features.join(", "),
-              images: subscription.image ? [subscription.image] : [],
-            },
-            unit_amount: finalAmount * 100,
-          },
-          quantity: 1,
-        },
-      ],
-      mode: "payment",
-      success_url: `${baseUrl}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${baseUrl}/subscriptions`,
-      customer_email: user.email,
-      metadata: {
+    const orderConfig = {
+      amount: finalAmount * 100, // Razorpay expects amount in paise (1 INR = 100 paise)
+      currency: "INR",
+      receipt: `receipt_${subscription._id}_${user.userId}_${Date.now()}`,
+      notes: {
         userId: user.userId,
         subscriptionId: subscription._id.toString(),
         couponId: coupon?._id.toString() || "",
         originalAmount: subscription.price.toString(),
         discountAmount: discountAmount.toString(),
         finalAmount: finalAmount.toString(),
+        subscriptionName: subscription.name,
+        userEmail: user.email,
       },
     }
 
-    const session = await stripe.checkout.sessions.create(sessionConfig)
+    const order = await razorpay.orders.create(orderConfig)
 
     return NextResponse.json({
-      sessionId: session.id,
-      testMode: isTestMode,
+      orderId: order.id,
+      amount: finalAmount * 100,
+      currency: "INR",
+      keyId: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
       finalAmount,
       originalAmount: subscription.price,
       discountAmount,
       couponApplied: !!coupon,
+      subscriptionName: subscription.name,
     })
   } catch (error) {
-    console.error("Create checkout session error:", error)
-
-    if (error.type === "StripeInvalidRequestError") {
-      if (error.message?.includes("live charges")) {
-        return NextResponse.json(
-          {
-            message: "Payment system is in test mode. Please use test card numbers.",
-            testMode: true,
-            testCards: {
-              success: "4242424242424242",
-              declined: "4000000000000002",
-            },
-          },
-          { status: 400 },
-        )
-      }
-    }
+    console.error("Create Razorpay order error:", error)
 
     return NextResponse.json(
       {
