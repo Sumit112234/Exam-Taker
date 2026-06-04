@@ -10,30 +10,31 @@ import Link from "next/link"
 
 export default function PaymentSuccess() {
   const searchParams = useSearchParams()
-  const sessionId = searchParams.get("session_id")
-  const [session, setSession] = useState(null)
+  const orderId = searchParams.get("order_id")
+  const paymentId = searchParams.get("payment_id")
+  const [order, setOrder] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
   useEffect(() => {
-    if (sessionId) {
-      fetchSession()
+    if (orderId) {
+      fetchOrder()
     } else {
-      setError("No session ID provided")
+      setError("No order ID provided")
       setLoading(false)
     }
-  }, [sessionId])
+  }, [orderId])
 
-  const fetchSession = async () => {
+  const fetchOrder = async () => {
     try {
-      const response = await fetch(`/api/payment/session/${sessionId}`)
+      const response = await fetch(`/api/payment/session/${orderId}`)
       const data = await response.json()
 
       if (!response.ok) {
         throw new Error(data.message)
       }
 
-      setSession(data)
+      setOrder(data)
     } catch (err) {
       setError(err.message)
     } finally {
@@ -78,19 +79,22 @@ export default function PaymentSuccess() {
           <CardTitle className="text-2xl text-green-600">Payment Successful!</CardTitle>
         </CardHeader>
         <CardContent className="text-center space-y-4">
-          {session?.mode === "subscription" && (
-            <Badge variant="outline" className="bg-green-50 text-green-700">
-              Subscription Active
-            </Badge>
-          )}
+          <Badge variant="outline" className="bg-green-50 text-green-700">
+            Subscription Active
+          </Badge>
 
           <div className="space-y-2">
             <p className="text-sm text-muted-foreground">
-              Amount: <span className="font-medium">${(session?.amount_total / 100).toFixed(2)}</span>
+              Amount: <span className="font-medium">₹{(order?.amount || 0).toFixed(2)}</span>
             </p>
             <p className="text-sm text-muted-foreground">
-              Email: <span className="font-medium">{session?.customer_email}</span>
+              Plan: <span className="font-medium">{order?.subscription || "Premium Plan"}</span>
             </p>
+            {paymentId && (
+              <p className="text-sm text-muted-foreground">
+                Payment ID: <span className="font-medium text-xs">{paymentId.substring(0, 20)}...</span>
+              </p>
+            )}
           </div>
 
           <div className="pt-4 space-y-2">
