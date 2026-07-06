@@ -78,6 +78,10 @@ const examSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    subscriptionPlan: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "SubscriptionPlan",
+    },
     totalQuestions: {
       type: Number,
       default: 0,

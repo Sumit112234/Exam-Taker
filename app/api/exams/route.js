@@ -3,11 +3,21 @@ import connectDB from "@/lib/mongodb"
 import Exam from "@/models/Exam"
 import Category from "@/models/Category"
 import Question from "@/models/Question"
+import { getCurrentUser } from "@/lib/auth"
 
 export async function GET(request) {
   try {
-    await connectDB()
 
+
+
+    await connectDB()
+    //  const currentUser = await getCurrentUser()
+    //     if (!currentUser) {
+    //       return NextResponse.json({ message: "-------" }, { status: 401 })
+    //     }
+    //     console.log("Authenticated user:", currentUser)
+
+        // return NextResponse.json({ message: "Authenticated" }, { status: 200 })
     const { searchParams } = new URL(request.url)
     const category = searchParams.get("category")
     const examName = searchParams.get("examName")
@@ -66,11 +76,11 @@ export async function GET(request) {
         select: "name code icon color",
       })
       .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit)
+      
 
       // console.log("Exams fetched:", exams.sections, exams)
       // Format exams with calculated statistics
+      // console.log('exxxam', exams)
       const formattedExams = exams.map((exam) => {
       // console.log("Exams section before  :",  exam.sections)
       // Calculate total questions from sections
@@ -98,7 +108,9 @@ export async function GET(request) {
         exam.totalDuration ||
         0
 
-              console.log("Exams section after  :",  exam.sections,totalQuestions,totalQuestionsUploaded)
+
+        
+              // console.log("Exams section after  :",  exam.sections,totalQuestions,totalQuestionsUploaded)
       return {
         _id: exam._id,
         title: exam.title,
@@ -112,6 +124,7 @@ export async function GET(request) {
         totalMarks,
         totalDuration,
         passingMarks: exam.passingMarks,
+        subscriptionPlan: exam?.subscriptionPlan,
         negativeMarking: exam.negativeMarking,
         sections:
           exam.sections?.map((section) => ({

@@ -19,6 +19,7 @@ export default function ExamsPage() {
   const [examTypes, setExamTypes] = useState([])
   const [exams, setExams] = useState([])
   const [resultIds, setResultIds] = useState([])
+  const [subscription, setSubscription] = useState(null)
   const [mockTests, setMockTests] = useState([])
   const [filteredExams, setFilteredExams] = useState([])
   const [filteredMockTests, setFilteredMockTests] = useState([])
@@ -33,15 +34,33 @@ export default function ExamsPage() {
 
   useEffect(() => {
     fetchData()
+    fetchIsUserValidSubscription()
   }, [])
 
   useEffect(() => {
     filterData()
   }, [exams, mockTests, filters, searchQuery])
 
+
+
   const getAttampts = (attempts) => {
     return Math.floor(Math.random() * 1000 + 142)
   }
+
+  useEffect(()=>{
+    if(user)
+    {
+      setSubscription(user?.subscription?.subscriptionId )
+    }
+    if(subscription)
+    {
+
+      // subscription is mil chuki h now ek subscription route mai se fetch krna h ki konsi categories included h subscripion mai and then usko ek usestate bana k usme
+      // store krna h
+      
+      console.log("subscription is ", subscription)
+    }
+  },[user, subscription])
 
   const fetchData = async () => {
     try {
@@ -134,9 +153,43 @@ export default function ExamsPage() {
     setFilteredMockTests(filteredMockTestsData)
   }
 
+
+  console.log('user is :', user)
+  const fetchIsUserValidSubscription = async () => {
+    try {
+      console.log("Fetching user subscription status for user:", user)
+      return ;
+      const response = await fetch("/api/subscription?userId=" + user._id)
+
+      if (response.ok) {
+        const data = await response.json()
+        console.log("User subscription status:", data)
+      }
+
+    } catch (error) {
+      console.error("Error fetching user subscription status:", error)
+    }
+  }
+
+
+
   const handleFilterChange = (key, value) => {
     setFilters((prev) => ({ ...prev, [key]: value }))
   }
+
+  const checkUserSubscription = (subscriptionRequired) => {
+    if (!subscriptionRequired) {  
+      return false
+    }
+
+
+
+    // user?.subscription?.status === "active" && user?.subscription?.expiry && new Date(user.subscription.expiry) > new Date() ? false : true
+
+    return true;
+  }
+
+
 
   if (isLoading) {
     return (
@@ -328,40 +381,40 @@ export default function ExamsPage() {
                         )}
                       </div>
                     </CardContent>
-<CardFooter className="flex gap-2">
-{exam.visibility.subscriptionRequired ? (
-  <Link href="/subscriptions" className="flex-1">
-    <Button variant="destructive" className="w-full">
-      <Lock className="mr-2 h-4 w-4" />
-      Unlock Now
-    </Button>
-  </Link>
-) : resultIds[exam._id] ? (
-  <Link href={`/results/${resultIds[exam._id]}`} className="flex-1">
-    <Button variant="outline" className="w-full">
-      <Eye className="mr-2 h-4 w-4" />
-      View Result
-    </Button>
-  </Link>
-) : (
-  <>
-    <Link href={`/exams/${exam._id}`} className="flex-1">
-      <Button variant="outline" className="w-full">
-        <Eye className="mr-2 h-4 w-4" />
-        View Details
-      </Button>
-    </Link>
-    <Link href={`/exams/${exam._id}/instructions`} className="flex-1">
-      <Button className="w-full">
-        <Play className="mr-2 h-4 w-4" />
-        Start Exam
-      </Button>
-    </Link>
-  </>
-)}
+                    <CardFooter className="flex gap-2">
+                    {checkUserSubscription(exam.visibility.subscriptionRequired) ? (
+                      <Link href="/subscriptions" className="flex-1">
+                        <Button variant="destructive" className="w-full">
+                          <Lock className="mr-2 h-4 w-4" />
+                          Unlock Now
+                        </Button>
+                      </Link>
+                    ) : resultIds[exam._id] ? (
+                      <Link href={`/results/${resultIds[exam._id]}`} className="flex-1">
+                        <Button variant="outline" className="w-full">
+                          <Eye className="mr-2 h-4 w-4" />
+                          View Result
+                        </Button>
+                      </Link>
+                    ) : (
+                      <>
+                        <Link href={`/exams/${exam._id}`} className="flex-1">
+                          <Button variant="outline" className="w-full">
+                            <Eye className="mr-2 h-4 w-4" />
+                            View Details
+                          </Button>
+                        </Link>
+                        <Link href={`/exams/${exam._id}/instructions`} className="flex-1">
+                          <Button className="w-full">
+                            <Play className="mr-2 h-4 w-4" />
+                            Start Exam
+                          </Button>
+                        </Link>
+                      </>
+                    )}
 
 
-</CardFooter>
+                    </CardFooter>
 
                   </Card>
                 ))

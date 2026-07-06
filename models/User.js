@@ -35,6 +35,7 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
+
     subscription: {
       status: {
         type: String,
@@ -45,16 +46,34 @@ const userSchema = new mongoose.Schema(
         type: String,
         default: "",
       },
-      expiry: {
+      startDate: {
+        type: Date,
+        required: true,
+      },
+
+      endDate: {
         type: Date,
       },
-      stripeCustomerId: {
+      paymentMethod : {
         type: String,
       },
-      stripeSubscriptionId: {
-        type: String,
+      amount: {
+        type: Number,
       },
-    },
+      originalAmount: {
+        type: Number,
+      },
+      discountAmount: {
+        type: Number,
+      },
+      couponCode: {
+        type: String,
+       },
+       subscriptionId : {
+        type : mongoose.Schema.Types.ObjectId,
+        ref : "Subscription"
+       },
+      },
     resetPasswordToken: {
       type: String,
     },

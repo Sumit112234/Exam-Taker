@@ -27,6 +27,13 @@ export async function POST(request) {
     let coupon = null
     let finalAmount = subscription.price
 
+    // console.log("Subscription details:", {
+    //   subscriptionId: subscription._id,
+    //   subscriptionName: subscription.name,
+    //   originalPrice: subscription.price,
+    //   couponCode,
+    // })
+
     // Apply coupon if provided
     if (couponCode) {
       coupon = await Coupon.findOne({
@@ -37,16 +44,24 @@ export async function POST(request) {
       })
 
       if (coupon) {
-        if (coupon.discountType === "percentage") {
+        // if (coupon.discountType === "percentage") {
           discountAmount = Math.round((subscription.price * coupon.discount) / 100)
-        } else {
-          discountAmount = Math.min(coupon.discount, subscription.price)
-        }
+        // } else {
+        //   discountAmount = Math.min(coupon.discount, subscription.price)
+        // }
         finalAmount = Math.max(0, subscription.price - discountAmount)
 
         // Update coupon usage
         coupon.usedCount += 1
-        await coupon.save()
+
+        // console.log("Coupon applied:", {
+        //   couponId: coupon._id,
+        //   discountType: coupon.discountType,
+        //   discountValue: coupon.discount,
+        //   usedCount: coupon.usedCount,
+        //   finalAmount,
+        // })
+        
       }
     }
 
@@ -62,6 +77,8 @@ export async function POST(request) {
       expiryDate.setDate(expiryDate.getDate() + subscription.duration)
 
       // Update user subscription
+
+      
       userData.subscription = {
         plan: subscription.name.toLowerCase(),
         status: "active",
@@ -109,7 +126,9 @@ export async function POST(request) {
     }
 
     const order = await razorpay.orders.create(orderConfig)
-
+    if(coupon){
+      await coupon.save()
+    }
     return NextResponse.json({
       orderId: order.id,
       amount: finalAmount * 100,

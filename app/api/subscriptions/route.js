@@ -2,10 +2,14 @@ import { NextResponse } from "next/server"
 import connectDB from "@/lib/mongodb"
 import Subscription from "@/models/Subscription"
 
-export async function GET() {
+export async function GET(request) {
   try {
     await connectDB()
 
+    const { searchParams } = new URL(request.url)
+    const userId = searchParams.get("userId")
+
+    console.log("user id is ..." ,userId )
     const subscriptions = await Subscription.find({ isActive: true }).sort({ price: 1 })
 
     const stats = {

@@ -30,7 +30,7 @@ export default function Subscriptions() {
   const [couponCode, setCouponCode] = useState("")
   const [couponDiscount, setCouponDiscount] = useState(0)
   const [couponError, setCouponError] = useState("")
-  const [isLoading, setIsLoading] = useState(false)
+  const [loadingId, setLoadingId] = useState(null) // FIX 1: track per-subscription loading
   const [mounted, setMounted] = useState(false)
   const router = useRouter()
 
@@ -43,7 +43,7 @@ export default function Subscriptions() {
     try {
       const response = await fetch("/api/subscriptions")
       const data = await response.json()
-      // console.log("Fetched subscriptions:", data)
+      console.log("Fetched subscriptions:", data)
       setSubscriptions(data?.subscriptions || [])
     } catch (error) {
       console.error("Error fetching subscriptions:", error)
@@ -80,16 +80,28 @@ export default function Subscriptions() {
   }
 
   const handleSubscribe = async (subscriptionId) => {
-    setIsLoading(true)
+    setLoadingId(subscriptionId) // FIX 1: set only this subscription as loading
 
     try {
       // Load Razorpay script
       const razorpayLoaded = await loadRazorpay()
       if (!razorpayLoaded) {
         alert("Failed to load Razorpay. Please try again.")
-        setIsLoading(false)
+        setLoadingId(null)
         return
       }
+
+      // FIX 2: calculate discounted price to send to backend
+      const subscription = subscriptions.find((s) => s._id === subscriptionId)
+      const originalPrice = subscription?.price || 0
+      const discountedPrice = calculateDiscountedPrice(originalPrice)
+
+      // console.log({
+      //     subscriptionId,
+      //     couponCode: couponDiscount > 0 ? couponCode : null,
+      //     amount: discountedPrice * 100, // FIX 2: send discounted amount in paise
+      //   })
+      // return ;
 
       const response = await fetch("/api/payment/create-checkout-session", {
         method: "POST",
@@ -97,6 +109,7 @@ export default function Subscriptions() {
         body: JSON.stringify({
           subscriptionId,
           couponCode: couponDiscount > 0 ? couponCode : null,
+          amount: discountedPrice * 100, // FIX 2: send discounted amount in paise
         }),
       })
 
@@ -104,20 +117,19 @@ export default function Subscriptions() {
 
       if (!response.ok) {
         alert(data.message || "Error creating payment order")
-        setIsLoading(false)
+        setLoadingId(null)
         return
       }
 
       // Open Razorpay modal
       const options = {
         key: data.keyId,
-        amount: data.amount,
+        amount: data.amount, // backend should honour the discounted amount
         currency: data.currency,
         name: "Exam Taker",
         description: `Subscribe to ${data.subscriptionName}`,
         order_id: data.orderId,
         handler: function (response) {
-          // Payment successful
           console.log("Payment successful", response)
           router.push(`/payment/success?order_id=${data.orderId}&payment_id=${response.razorpay_payment_id}`)
         },
@@ -128,6 +140,15 @@ export default function Subscriptions() {
           color: "#3b82f6",
         },
       }
+// setLoadingId(null)
+      // console.log(data)
+      // return ;
+
+      if (data.freeSubscription) {
+        alert("Subscription activated successfully!")
+        router.push("/dashboard")
+        return
+      }
 
       const razorpay = new window.Razorpay(options)
       razorpay.open()
@@ -135,7 +156,7 @@ export default function Subscriptions() {
       console.error("Error:", error)
       alert("Error processing payment")
     } finally {
-      setIsLoading(false)
+      setLoadingId(null) // FIX 1: always clear loading state
     }
   }
 
@@ -150,12 +171,11 @@ export default function Subscriptions() {
     return null
   }
 
-
   return (
     <div className="container py-6 mx-auto">
-                <Button variant="outline" className="ml-4" size="icon" onClick={() => router.back()}>
-            <ArrowLeft className="h-4 w-4 " />
-          </Button>
+      <Button variant="outline" className="ml-4" size="icon" onClick={() => router.back()}>
+        <ArrowLeft className="h-4 w-4 " />
+      </Button>
       <div className="mb-8 text-center ">
         <h1 className="text-3xl font-bold tracking-tight">Choose Your Plan</h1>
         <p className="text-muted-foreground mt-2">Unlock premium features and take unlimited exams</p>
@@ -204,7 +224,8 @@ export default function Subscriptions() {
         {subscriptions.map((subscription, index) => {
           const originalPrice = subscription.price
           const discountedPrice = calculateDiscountedPrice(originalPrice)
-          const isPopular = index === 1 // Make middle plan popular
+          const isPopular = index === 1
+          const isThisLoading = loadingId === subscription._id // FIX 1: per-card loading check
 
           return (
             <Card key={subscription._id} className={`relative ${isPopular ? "border-primary" : ""}`}>
@@ -245,10 +266,10 @@ export default function Subscriptions() {
                 <Button
                   className="w-full"
                   onClick={() => handleSubscribe(subscription._id)}
-                  disabled={isLoading}
+                  disabled={loadingId !== null} // disable all while any is processing
                   variant={isPopular ? "default" : "outline"}
                 >
-                  {isLoading ? "Processing..." : "Subscribe Now"}
+                  {isThisLoading ? "Processing..." : "Subscribe Now"} {/* FIX 1: per-card label */}
                 </Button>
               </CardFooter>
             </Card>
@@ -263,7 +284,6 @@ export default function Subscriptions() {
     </div>
   )
 }
-
 
 
 

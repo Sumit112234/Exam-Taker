@@ -6,6 +6,8 @@ const subscriptionSchema = new mongoose.Schema(
     price: { type: Number, required: true },
     duration: { type: Number, required: true }, // in days
     features: [String],
+    includedExams: [{ type: mongoose.Schema.Types.ObjectId, ref: "Category" }],
+    image: { type: String },
     stripePriceId: { type: String, required: true },
     isActive: { type: Boolean, default: true },
   },
