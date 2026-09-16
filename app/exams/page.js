@@ -42,6 +42,7 @@ export default function ExamsPage() {
   }, [exams, mockTests, filters, searchQuery])
 
 
+   const router = useRouter()
 
   const getAttampts = (attempts) => {
     return Math.floor(Math.random() * 1000 + 142)
@@ -199,7 +200,6 @@ export default function ExamsPage() {
     )
   }
 
-   const router = useRouter()
 
   return (
     <div className="min-h-screen  mx-10 bg-gradient-to-br from-blue-50 via-white to-blue-100 dark:from-blue-950 dark:via-gray-900 dark:to-blue-900">
