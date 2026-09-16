@@ -19,10 +19,9 @@ export function AuthProvider({ children }) {
       const response = await fetch("/api/auth/me", {
         credentials: "include",
       })
-      // let data = await response.json()
-      // console.log("Auth check response:", data)
 
-      if (response.ok) {
+      if (response.ok) 
+        {
         const userData = await response.json()
         setUser(userData.user)
       } else {
