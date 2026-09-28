@@ -162,7 +162,7 @@ export default function ProfessionalSignup() {
       }
 
       // Redirect to dashboard after successful signup
-      router.push("/dashboard")
+      router.push("/u/dashboard")
       router.refresh()
     } catch (err) {
       setError(err.message)
