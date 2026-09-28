@@ -1,10 +1,35 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Eye, EyeOff, Mail, Lock, User, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
+import {
+  Eye,
+  EyeOff,
+  Mail,
+  Lock,
+  Check,
+  CheckCircle,
+  AlertCircle,
+  Loader2,
+  ArrowLeft,
+  Clock,
+} from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { GoogleLogin } from "@react-oauth/google"
 import Router from 'next/router';
+
+const EASE = [0.16, 1, 0.3, 1];
+
+const GLOBAL_CSS = `
+@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Public+Sans:wght@400;500;600;700&display=swap');
+.ep-body{font-family:'Public Sans',ui-sans-serif,system-ui,sans-serif}
+.ep-display{font-family:'Bricolage Grotesque','Public Sans',ui-sans-serif,system-ui,sans-serif;font-optical-sizing:auto}
+.ep-num{font-variant-numeric:tabular-nums}
+.ep-body :focus-visible{outline:2px solid #1D4FE0;outline-offset:2px}
+.ep-on-dark :focus-visible{outline-color:#FFD84A}
+@keyframes ep-ring{0%{box-shadow:0 0 0 0 rgba(255,255,255,.35)}100%{box-shadow:0 0 0 10px rgba(255,255,255,0)}}
+.ep-pulse{animation:ep-ring 1.8s ease-out infinite}
+@media (prefers-reduced-motion:reduce){.ep-pulse{animation:none}}
+`;
 
 const ModernLoginForm = () => {
   const [formData, setFormData] = useState({
@@ -162,356 +187,980 @@ const ModernLoginForm = () => {
     }
   };
 
-  // Floating particles animation
-  const particles = Array.from({ length: 20 }, (_, i) => (
-    <motion.div
-      key={i}
-      className="absolute w-2 h-2 bg-purple-400 rounded-full opacity-20"
-      animate={{
-        x: [0, Math.random() * 100 - 50],
-        y: [0, Math.random() * 100 - 50],
-        opacity: [0.2, 0.8, 0.2]
-      }}
-      transition={{
-        duration: 3 + Math.random() * 2,
-        repeat: Infinity,
-        repeatType: 'reverse'
-      }}
-      style={{
-        left: `${Math.random() * 100}%`,
-        top: `${Math.random() * 100}%`
-      }}
-    />
-  ));
-
   // Animation variants
   const containerVariants = {
-    hidden: { opacity: 0, scale: 0.8 },
+    hidden: { opacity: 0, scale: 0.96, y: 16 },
     visible: {
       opacity: 1,
       scale: 1,
+      y: 0,
       transition: {
         duration: 0.6,
-        ease: 'easeOut',
-        staggerChildren: 0.1
+        ease: EASE,
+        staggerChildren: 0.08
       }
     }
   };
 
   const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
+    hidden: { opacity: 0, y: 16 },
     visible: {
       opacity: 1,
       y: 0,
-      transition: { duration: 0.5, ease: 'easeOut' }
+      transition: { duration: 0.5, ease: EASE }
     }
   };
 
-  const buttonVariants = {
-    idle: { scale: 1 },
-    hover: { scale: 1.02 },
-    tap: { scale: 0.98 }
-  };
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-slate-100 flex items-center justify-center p-4 relative overflow-hidden">
-      {/* Animated Background */}
-      <div 
-        className="absolute inset-0 opacity-30"
-        style={{
-          background: `radial-gradient(circle at ${mousePosition.x}px ${mousePosition.y}px, rgba(139, 92, 246, 0.1) 0%, transparent 50%)`
-        }}
-      />
-      
-      {/* Floating Particles */}
-      {particles}
+    <div className="ep-body relative min-h-screen bg-[#F3F6FB] lg:grid lg:grid-cols-2">
+      <style dangerouslySetInnerHTML={{ __html: GLOBAL_CSS }} />
 
-      {/* Main Form Container */}
-      <motion.div
-        variants={containerVariants}
-        initial="hidden"
-        animate="visible"
-        className="w-full max-w-md relative"
-      >
-        {/* Glassmorphism Card */}
+      <BrandPanel />
+
+      {/* Form side */}
+      <div className="relative flex min-h-screen items-center justify-center overflow-hidden px-5 py-12 sm:px-8">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 transition-[background] duration-300"
+          style={{
+            background: `radial-gradient(480px circle at ${mousePosition.x}px ${mousePosition.y}px, rgba(29,79,224,0.06), transparent 60%)`
+          }}
+        />
+
         <motion.div
-          variants={itemVariants}
-          className="bg-white/80 backdrop-blur-lg rounded-2xl shadow-xl border border-white/20 p-8 relative"
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+          className="relative w-full max-w-md"
         >
-          {/* Header */}
-          <motion.div variants={itemVariants} className="text-center mb-8">
-            <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
-              className="w-16 h-16 bg-gradient-to-r from-purple-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4"
-            >
-              <User className="w-8 h-8 text-white" />
-            </motion.div>
-            <h1 className="text-3xl font-bold text-gray-800 mb-2">Welcome Back</h1>
-            <p className="text-gray-600">Sign in to your account</p>
-          </motion.div>
+          <motion.a
+            variants={itemVariants}
+            href="/"
+            className="mb-6 inline-flex items-center gap-1.5 text-sm font-semibold text-[#56637F] transition-colors hover:text-[#0C1A3A]"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back to ExamPro
+          </motion.a>
 
-          {/* Form */}
-          <div className="space-y-6">
-            {/* Email Field */}
-            <motion.div variants={itemVariants} className="relative">
-              <div className="relative">
-                <motion.div
-                  animate={{
-                    scale: formData.email ? 1.1 : 1,
-                    color: errors.email ? '#ef4444' : formData.email ? '#10b981' : '#6b7280'
-                  }}
-                  className="absolute left-3 top-1/2 transform -translate-y-1/2 z-10"
-                >
-                  <Mail className="w-5 h-5" />
-                </motion.div>
-                
-                <motion.input
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  placeholder="Enter your email"
-                  className={`w-full pl-12 pr-4 py-3 border-2 rounded-xl transition-all duration-300 bg-white/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-purple-500/50 ${
-                    errors.email ? 'border-red-400 focus:border-red-500' : 
-                    formData.email ? 'border-green-400 focus:border-green-500' : 
-                    'border-gray-200 focus:border-purple-400'
-                  }`}
-                  whileFocus={{ scale: 1.02 }}
-                  aria-label="Email address"
-                  aria-invalid={!!errors.email}
-                  aria-describedby={errors.email ? 'email-error' : undefined}
-                />
-                
-                {/* Validation Icons */}
-                <AnimatePresence>
-                  {formData.email && (
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0 }}
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2"
-                    >
-                      {errors.email ? (
-                        <AlertCircle className="w-5 h-5 text-red-500" />
-                      ) : (
-                        <CheckCircle className="w-5 h-5 text-green-500" />
-                      )}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+          <motion.div
+            variants={itemVariants}
+            className="rounded-2xl border border-[#DDE4F0] bg-white p-8 shadow-[0_30px_70px_-35px_rgba(12,26,58,0.35)]"
+          >
+            {/* Header */}
+            <motion.div variants={itemVariants} className="mb-8 flex items-center gap-3">
+              <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-[#E8EEFE]">
+                <img src="/exampro-logo-mark.png" alt="" className="h-7 w-7 object-contain" />
+              </span>
+              <div>
+                <h1 className="ep-display text-2xl font-bold tracking-tight text-[#0C1A3A]">Login to ExamPro</h1>
+                <p className="text-sm text-[#56637F]">Access your mock tests and dashboard</p>
               </div>
-              
-              {/* Error Message */}
-              <AnimatePresence>
-                {errors.email && (
-                  <motion.p
-                    id="email-error"
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    className="text-red-500 text-sm mt-1 ml-1"
-                  >
-                    {errors.email}
-                  </motion.p>
-                )}
-              </AnimatePresence>
             </motion.div>
 
-            {/* Password Field */}
-            <motion.div variants={itemVariants} className="relative">
-              <div className="relative">
-                <motion.div
-                  animate={{
-                    scale: formData.password ? 1.1 : 1,
-                    color: errors.password ? '#ef4444' : formData.password ? '#10b981' : '#6b7280'
-                  }}
-                  className="absolute left-3 top-1/2 transform -translate-y-1/2 z-10"
-                >
-                  <Lock className="w-5 h-5" />
-                </motion.div>
-                
-                <motion.input
-                  type={showPassword ? 'text' : 'password'}
-                  name="password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  placeholder="Enter your password"
-                  className={`w-full pl-12 pr-12 py-3 border-2 rounded-xl transition-all duration-300 bg-white/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-purple-500/50 ${
-                    errors.password ? 'border-red-400 focus:border-red-500' : 
-                    formData.password ? 'border-green-400 focus:border-green-500' : 
-                    'border-gray-200 focus:border-purple-400'
-                  }`}
-                  whileFocus={{ scale: 1.02 }}
-                  aria-label="Password"
-                  aria-invalid={!!errors.password}
-                  aria-describedby={errors.password ? 'password-error' : undefined}
-                />
-                
-                {/* Password Toggle */}
-                <motion.button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-purple-600 transition-colors"
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
-                  aria-label={showPassword ? 'Hide password' : 'Show password'}
-                >
-                  <AnimatePresence mode="wait">
-                    {showPassword ? (
+            {/* Form */}
+            <div className="space-y-5">
+              {/* Email Field */}
+              <motion.div variants={itemVariants} className="relative">
+                <label htmlFor="email" className="mb-1.5 block text-sm font-semibold text-[#0C1A3A]">
+                  Email address
+                </label>
+                <div className="relative">
+                  <motion.div
+                    animate={{
+                      color: errors.email ? '#E5484D' : formData.email ? '#12A150' : '#8A97B3'
+                    }}
+                    className="absolute left-3.5 top-1/2 -translate-y-1/2 z-10"
+                  >
+                    <Mail className="w-5 h-5" />
+                  </motion.div>
+
+                  <motion.input
+                    id="email"
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    placeholder="you@example.com"
+                    className={`w-full rounded-lg border-2 bg-white py-3 pl-11 pr-11 text-[#0C1A3A] outline-none transition-colors duration-200 placeholder:text-[#8A97B3] focus:border-[#1D4FE0] ${
+                      errors.email ? 'border-[#E5484D] bg-[#FDECEC]/40' :
+                      formData.email ? 'border-[#12A150] bg-[#E7F6EE]/40' :
+                      'border-[#DDE4F0]'
+                    }`}
+                    whileFocus={{ scale: 1.01 }}
+                    aria-label="Email address"
+                    aria-invalid={!!errors.email}
+                    aria-describedby={errors.email ? 'email-error' : undefined}
+                  />
+
+                  <AnimatePresence>
+                    {formData.email && (
                       <motion.div
-                        key="eye-off"
-                        initial={{ opacity: 0, rotate: 180 }}
-                        animate={{ opacity: 1, rotate: 0 }}
-                        exit={{ opacity: 0, rotate: -180 }}
-                        transition={{ duration: 0.2 }}
+                        initial={{ opacity: 0, scale: 0 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0 }}
+                        className="absolute right-3.5 top-1/2 -translate-y-1/2"
                       >
-                        <EyeOff className="w-5 h-5" />
-                      </motion.div>
-                    ) : (
-                      <motion.div
-                        key="eye"
-                        initial={{ opacity: 0, rotate: 180 }}
-                        animate={{ opacity: 1, rotate: 0 }}
-                        exit={{ opacity: 0, rotate: -180 }}
-                        transition={{ duration: 0.2 }}
-                      >
-                        <Eye className="w-5 h-5" />
+                        {errors.email ? (
+                          <AlertCircle className="w-5 h-5 text-[#E5484D]" />
+                        ) : (
+                          <CheckCircle className="w-5 h-5 text-[#12A150]" />
+                        )}
                       </motion.div>
                     )}
                   </AnimatePresence>
-                </motion.button>
-              </div>
-              
-              {/* Error Message */}
-              <AnimatePresence>
-                {errors.password && (
-                  <motion.p
-                    id="password-error"
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    className="text-red-500 text-sm mt-1 ml-1"
-                  >
-                    {errors.password}
-                  </motion.p>
-                )}
-              </AnimatePresence>
-            </motion.div>
+                </div>
 
-            {/* Remember Me & Forgot Password */}
-            <motion.div variants={itemVariants} className="flex items-center justify-between">
-              <label className="flex items-center space-x-2 cursor-pointer">
-                <motion.input
-                  type="checkbox"
-                  name="rememberMe"
-                  checked={formData.rememberMe}
-                  onChange={handleChange}
-                  className="w-4 h-4 text-purple-600 bg-white border-2 border-gray-300 rounded focus:ring-purple-500 focus:ring-2"
-                  whileTap={{ scale: 0.9 }}
-                />
-                <span className="text-sm text-gray-600">Remember me</span>
-              </label>
-              
-              <motion.a
-                href="#"
-                className="text-sm text-purple-600 hover:text-purple-800 transition-colors"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+                <AnimatePresence>
+                  {errors.email && (
+                    <motion.p
+                      id="email-error"
+                      initial={{ opacity: 0, y: -8, height: 0 }}
+                      animate={{ opacity: 1, y: 0, height: 'auto' }}
+                      exit={{ opacity: 0, y: -8, height: 0 }}
+                      className="mt-1.5 text-sm text-[#E5484D]"
+                    >
+                      {errors.email}
+                    </motion.p>
+                  )}
+                </AnimatePresence>
+              </motion.div>
+
+              {/* Password Field */}
+              <motion.div variants={itemVariants} className="relative">
+                <label htmlFor="password" className="mb-1.5 block text-sm font-semibold text-[#0C1A3A]">
+                  Password
+                </label>
+                <div className="relative">
+                  <motion.div
+                    animate={{
+                      color: errors.password ? '#E5484D' : formData.password ? '#12A150' : '#8A97B3'
+                    }}
+                    className="absolute left-3.5 top-1/2 -translate-y-1/2 z-10"
+                  >
+                    <Lock className="w-5 h-5" />
+                  </motion.div>
+
+                  <motion.input
+                    id="password"
+                    type={showPassword ? 'text' : 'password'}
+                    name="password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    placeholder="Enter your password"
+                    className={`w-full rounded-lg border-2 bg-white py-3 pl-11 pr-11 text-[#0C1A3A] outline-none transition-colors duration-200 placeholder:text-[#8A97B3] focus:border-[#1D4FE0] ${
+                      errors.password ? 'border-[#E5484D] bg-[#FDECEC]/40' :
+                      formData.password ? 'border-[#12A150] bg-[#E7F6EE]/40' :
+                      'border-[#DDE4F0]'
+                    }`}
+                    whileFocus={{ scale: 1.01 }}
+                    aria-label="Password"
+                    aria-invalid={!!errors.password}
+                    aria-describedby={errors.password ? 'password-error' : undefined}
+                  />
+
+                  <motion.button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#8A97B3] transition-colors hover:text-[#1D4FE0]"
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  >
+                    <AnimatePresence mode="wait">
+                      {showPassword ? (
+                        <motion.div
+                          key="eye-off"
+                          initial={{ opacity: 0, rotate: 90 }}
+                          animate={{ opacity: 1, rotate: 0 }}
+                          exit={{ opacity: 0, rotate: -90 }}
+                          transition={{ duration: 0.2 }}
+                        >
+                          <EyeOff className="w-5 h-5" />
+                        </motion.div>
+                      ) : (
+                        <motion.div
+                          key="eye"
+                          initial={{ opacity: 0, rotate: 90 }}
+                          animate={{ opacity: 1, rotate: 0 }}
+                          exit={{ opacity: 0, rotate: -90 }}
+                          transition={{ duration: 0.2 }}
+                        >
+                          <Eye className="w-5 h-5" />
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </motion.button>
+                </div>
+
+                <AnimatePresence>
+                  {errors.password && (
+                    <motion.p
+                      id="password-error"
+                      initial={{ opacity: 0, y: -8, height: 0 }}
+                      animate={{ opacity: 1, y: 0, height: 'auto' }}
+                      exit={{ opacity: 0, y: -8, height: 0 }}
+                      className="mt-1.5 text-sm text-[#E5484D]"
+                    >
+                      {errors.password}
+                    </motion.p>
+                  )}
+                </AnimatePresence>
+              </motion.div>
+
+              {/* Remember Me & Forgot Password */}
+              <motion.div variants={itemVariants} className="flex items-center justify-between pt-1">
+                <label className="flex cursor-pointer select-none items-center gap-2.5">
+                  <input
+                    type="checkbox"
+                    name="rememberMe"
+                    checked={formData.rememberMe}
+                    onChange={handleChange}
+                    className="peer sr-only"
+                  />
+                  <span
+                    className={`grid h-5 w-5 shrink-0 place-items-center rounded border-2 transition-colors peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-[#1D4FE0] ${
+                      formData.rememberMe ? 'border-[#1D4FE0] bg-[#1D4FE0]' : 'border-[#9AA7C2] bg-white'
+                    }`}
+                  >
+                    <AnimatePresence>
+                      {formData.rememberMe && (
+                        <motion.span
+                          initial={{ scale: 0 }}
+                          animate={{ scale: 1 }}
+                          exit={{ scale: 0 }}
+                          transition={{ type: 'spring', stiffness: 500, damping: 18 }}
+                        >
+                          <Check className="h-3.5 w-3.5 text-white" strokeWidth={3.5} />
+                        </motion.span>
+                      )}
+                    </AnimatePresence>
+                  </span>
+                  <span className="text-sm font-medium text-[#56637F]">Remember me</span>
+                </label>
+
+                <motion.a
+                  href="/forgot-password"
+                  className="text-sm font-semibold text-[#1D4FE0] transition-colors hover:text-[#153CA8]"
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
+                >
+                  Forgot password?
+                </motion.a>
+              </motion.div>
+
+              {/* Submit Button */}
+              <motion.button
+                variants={itemVariants}
+                type="button"
+                onClick={handleSubmit}
+                disabled={isLoading}
+                whileHover={{ scale: isLoading ? 1 : 1.01 }}
+                whileTap={{ scale: isLoading ? 1 : 0.98 }}
+                className="relative w-full overflow-hidden rounded-lg bg-[#1D4FE0] py-3.5 font-bold text-white shadow-[0_3px_0_0_#1237A6] transition-colors duration-200 hover:bg-[#2A5CF0] disabled:cursor-not-allowed disabled:opacity-70"
               >
-                Forgot password?
-              </motion.a>
-            </motion.div>
+                <AnimatePresence mode="wait">
+                  {isLoading ? (
+                    <motion.div
+                      key="loading"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      className="flex items-center justify-center gap-2"
+                    >
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      Signing in...
+                    </motion.div>
+                  ) : isSubmitted ? (
+                    <motion.div
+                      key="success"
+                      initial={{ opacity: 0, scale: 0.85 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.85 }}
+                      className="flex items-center justify-center gap-2"
+                    >
+                      <CheckCircle className="w-5 h-5" />
+                      Welcome back!
+                    </motion.div>
+                  ) : (
+                    <motion.span
+                      key="idle"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                    >
+                      Sign in
+                    </motion.span>
+                  )}
+                </AnimatePresence>
+              </motion.button>
 
-            {/* Submit Button */}
-            <motion.button
-              type="button"
-              onClick={handleSubmit}
-              disabled={isLoading}
-              variants={buttonVariants}
-              initial="idle"
-              whileHover="hover"
-              whileTap="tap"
-              className="w-full bg-gradient-to-r from-purple-500 to-purple-600 text-white py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed relative overflow-hidden"
-            >
-              <AnimatePresence mode="wait">
-                {isLoading ? (
-                  <motion.div
-                    key="loading"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    className="flex items-center justify-center"
-                  >
-                    <Loader2 className="w-5 h-5 animate-spin mr-2" />
-                    Signing in...
-                  </motion.div>
-                ) : isSubmitted ? (
-                  <motion.div
-                    key="success"
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.8 }}
-                    className="flex items-center justify-center"
-                  >
-                    <CheckCircle className="w-5 h-5 mr-2" />
-                    Welcome back!
-                  </motion.div>
-                ) : (
-                  <motion.span
-                    key="idle"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                  >
-                    Sign In
-                  </motion.span>
-                )}
-              </AnimatePresence>
-            </motion.button>
+              {/* Divider */}
+              <motion.div variants={itemVariants} className="flex items-center gap-3 pt-1">
+                <span className="h-px flex-1 bg-[#DDE4F0]" />
+                <span className="text-xs font-medium text-[#8A97B3]">or continue with</span>
+                <span className="h-px flex-1 bg-[#DDE4F0]" />
+              </motion.div>
 
-            {/* Google OAuth Button */}
-            <GoogleLogin
-              type="button"
-              variants={buttonVariants}
-              initial="idle"
-               onSuccess={handleSubmitGoogle}
-              whileHover="hover"
-              whileTap="tap"
-              className="w-full bg-white border-2 border-gray-200 text-gray-700 py-3 rounded-xl font-semibold hover:bg-gray-50 transition-all duration-300 flex items-center justify-center space-x-2"
-            >
-              <svg className="w-5 h-5" viewBox="0 0 24 24">
-                <path fill="#4285f4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                <path fill="#34a853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                <path fill="#fbbc05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                <path fill="#ea4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-              </svg>
-              <span>Continue with Google</span>
-            </GoogleLogin>
-          </div>
+              {/* Google OAuth Button */}
+              <motion.div variants={itemVariants} className="flex justify-center [&>div]:w-full [&_iframe]:!w-full">
+                <GoogleLogin
+                  onSuccess={handleSubmitGoogle}
+                  onError={() => setErrors({ email: 'Google login failed. Please try again.' })}
+                  theme="outline"
+                  size="large"
+                  shape="rectangular"
+                  text="continue_with"
+                  width="336"
+                />
+              </motion.div>
+            </div>
 
-          {/* Sign Up Link */}
-          <motion.div variants={itemVariants} className="text-center mt-6">
-            <p className="text-gray-600">
-              Don't have an account?{' '}
+            {/* Sign Up Link */}
+            <motion.div variants={itemVariants} className="mt-7 text-center text-sm text-[#56637F]">
+              Don&apos;t have an account?{' '}
               <motion.a
                 href="/signup"
-                className="text-purple-600 hover:text-purple-800 font-semibold transition-colors"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+                className="font-semibold text-[#1D4FE0] transition-colors hover:text-[#153CA8]"
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
               >
                 Sign up
               </motion.a>
-            </p>
+            </motion.div>
           </motion.div>
+
+          <motion.p variants={itemVariants} className="mt-6 text-center text-xs text-[#8A97B3]">
+            Free tests are open to everyone. Premium tests unlock with a subscription.
+          </motion.p>
         </motion.div>
-      </motion.div>
+      </div>
     </div>
   );
 };
 
+/* ------------------------------------------------------------------ *
+ *  Left brand panel — desktop only, echoes the exam-window aesthetic
+ * ------------------------------------------------------------------ */
+
+function BrandPanel() {
+  return (
+    <div className="ep-on-dark relative hidden overflow-hidden bg-[#0C1A3A] lg:flex lg:flex-col lg:justify-between lg:p-12 xl:p-16">
+      <div
+        aria-hidden
+        className="absolute inset-0"
+        style={{
+          backgroundImage: 'radial-gradient(rgba(255,255,255,.09) 1px, transparent 1.5px)',
+          backgroundSize: '22px 22px',
+          WebkitMaskImage: 'radial-gradient(circle at 30% 20%, black, transparent 75%)',
+          maskImage: 'radial-gradient(circle at 30% 20%, black, transparent 75%)',
+        }}
+      />
+      <div aria-hidden className="absolute -right-24 top-1/3 h-80 w-80 rounded-full bg-[#1D4FE0]/25 blur-3xl" />
+      <div aria-hidden className="absolute -bottom-24 -left-16 h-72 w-72 rounded-full bg-[#2FB8B0]/15 blur-3xl" />
+
+      <motion.a
+        href="/"
+        initial={{ opacity: 0, y: -12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: EASE }}
+        className="relative flex items-center gap-3"
+      >
+        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-white p-1.5">
+          <img src="/exampro-logo-mark.png" alt="" className="h-full w-full object-contain" />
+        </span>
+        <span className="ep-display text-xl font-bold text-white">ExamPro</span>
+      </motion.a>
+
+      <div className="relative">
+        <motion.h2
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, delay: 0.15, ease: EASE }}
+          className="ep-display max-w-md text-4xl font-bold leading-[1.08] tracking-[-0.02em] text-white xl:text-[2.75rem]"
+        >
+          Everything you need for exam day, in one login.
+        </motion.h2>
+        <motion.p
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, delay: 0.25, ease: EASE }}
+          className="relative mt-4 max-w-sm text-white/70"
+        >
+          SSC, Banking, Railways, UPSC and State PSC — free and premium mock tests, side by side
+          on your dashboard.
+        </motion.p>
+
+        <motion.div
+          initial={{ opacity: 0, y: 28, scale: 0.97 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.7, delay: 0.4, ease: EASE }}
+          className="relative mt-9 w-full max-w-sm rounded-xl border border-white/10 bg-white/[0.06] p-4 backdrop-blur-sm"
+        >
+          <div className="flex items-center justify-between text-xs font-semibold text-white/70">
+            <span className="rounded-md bg-white/10 px-2 py-1">Quantitative Aptitude</span>
+            <span className="flex items-center gap-1.5 rounded-md bg-[#FFD84A] px-2 py-1 text-[#0C1A3A]">
+              <Clock className="h-3.5 w-3.5" />
+              18:42
+            </span>
+          </div>
+          <p className="mt-3 text-sm leading-relaxed text-white">
+            A train 120 m long crosses a pole in 8 seconds. What is its speed?
+          </p>
+          <div className="mt-3 space-y-1.5">
+            {["36 km/h", "45 km/h", "54 km/h", "60 km/h"].map((opt, i) => (
+              <div
+                key={opt}
+                className={`flex items-center gap-2.5 rounded-md border px-3 py-2 text-xs font-medium ${
+                  i === 2
+                    ? 'border-[#1D4FE0]/60 bg-[#1D4FE0]/20 text-white'
+                    : 'border-white/10 text-white/60'
+                }`}
+              >
+                <span
+                  className={`grid h-4 w-4 shrink-0 place-items-center rounded-full border text-[9px] ${
+                    i === 2 ? 'border-[#1D4FE0] bg-[#1D4FE0] text-white' : 'border-white/30'
+                  }`}
+                >
+                  {i === 2 ? <Check className="h-2.5 w-2.5" strokeWidth={4} /> : 'ABCD'[i]}
+                </span>
+                {opt}
+              </div>
+            ))}
+          </div>
+        </motion.div>
+      </div>
+
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.7, delay: 0.6 }}
+        className="relative flex items-center gap-2 text-sm text-white/60"
+      >
+        <span className="ep-pulse h-2 w-2 rounded-full bg-[#3DDC84]" />
+        <span className="ep-num font-semibold text-white">50,000+</span>
+        aspirants already preparing on ExamPro
+      </motion.div>
+    </div>
+  );
+}
+
 export default ModernLoginForm;
+
+
+// "use client";
+// import React, { useState, useEffect } from 'react';
+// import { motion, AnimatePresence } from 'framer-motion';
+// import { Eye, EyeOff, Mail, Lock, User, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
+// import { useAuth } from '@/contexts/AuthContext';
+// import { GoogleLogin } from "@react-oauth/google"
+// import Router from 'next/router';
+
+// const ModernLoginForm = () => {
+//   const [formData, setFormData] = useState({
+//     email: '',
+//     password: '',
+//     rememberMe: false
+//   });
+//   const [errors, setErrors] = useState({});
+//   const [isLoading, setIsLoading] = useState(false);
+//   const [showPassword, setShowPassword] = useState(false);
+//   const [isSubmitted, setIsSubmitted] = useState(false);
+//   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+//   const { login , signup } = useAuth();
+
+
+//   // Mouse tracking for background gradient effect
+//   useEffect(() => {
+//     const handleMouseMove = (e) => {
+//       setMousePosition({ x: e.clientX, y: e.clientY });
+//     };
+//     window.addEventListener('mousemove', handleMouseMove);
+//     return () => window.removeEventListener('mousemove', handleMouseMove);
+//   }, []);
+
+//   // Email validation
+//   const validateEmail = (email) => {
+//     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+//     return emailRegex.test(email);
+//   };
+
+//   // Real-time validation
+//   const validateField = (name, value) => {
+//     switch (name) {
+//       case 'email':
+//         return validateEmail(value) ? '' : 'Please enter a valid email address';
+//       case 'password':
+//         return value.length >= 6 ? '' : 'Password must be at least 6 characters';
+//       default:
+//         return '';
+//     }
+//   };
+
+//   const handleSubmitGoogle = async (credentialResponse) => {
+//     setIsLoading(true);
+//     console.log("GoogleAuthButton rendered ");
+
+//       const tokenId = credentialResponse?.credential;
+      
+
+//       if (!tokenId) {
+//         console.error("No tokenId found in credentialResponse");
+//         return;
+//       }
+//      try {
+//      // Simulate Google login
+//       let data  = await fetch(`https://www.googleapis.com/oauth2/v3/tokeninfo?id_token=${tokenId}`)
+//       data = await data.json();
+//       // console.log(data)
+//       const { email, name, picture, email_verified } = data
+//       // console.log(email, name , picture, email_verified)
+//       try {
+
+//         const result = await signup(name, email, "google-auth-password",true,  picture, email_verified);
+
+//         console.log("Signup result:", result);
+      
+      
+//         // const response = await fetch("/api/auth/signup", {
+//       //   method: "POST",
+//       //   headers: { "Content-Type": "application/json" },
+//       //   body: JSON.stringify({
+//       //     name,
+//       //     email ,
+//       //     avatar : picture,
+//       //     password: "google-auth-password",
+//       //     isVerified: email_verified,
+//       //   }),
+//       //   credentials: "include"
+//       // })
+
+//       // const data = await response.json()
+
+//       // if (!response.ok) {
+//       //   throw new Error(data.message || "Signup failed")
+//       // }
+
+//       // // Redirect to dashboard after successful signup
+//       // router.push("/admin")
+//       // router.refresh()
+//     } catch (err) {
+//       console.error("Signup failed:", err)
+//     }
+
+//       setIsLoading(false)
+//      }
+//      catch (error) {
+//       console.error("Google login failed", error);
+//       setErrors({ email: 'Google login failed. Please try again.' });
+//       setIsLoading(false);
+//       return;
+//      }
+// }
+
+//   // Handle input changes
+//   const handleChange = (e) => {
+//     const { name, value, type, checked } = e.target;
+//     const fieldValue = type === 'checkbox' ? checked : value;
+    
+//     setFormData(prev => ({ ...prev, [name]: fieldValue }));
+    
+//     // Real-time validation
+//     if (name !== 'rememberMe') {
+//       const error = validateField(name, fieldValue);
+//       setErrors(prev => ({ ...prev, [name]: error }));
+//     }
+//   };
+
+//   // Handle form submission
+//   const handleSubmit = async (e) => {
+//     if (e) e.preventDefault();
+    
+//     // Validate all fields
+//     const emailError = validateField('email', formData.email);
+//     const passwordError = validateField('password', formData.password);
+    
+//     if (emailError || passwordError) {
+//       setErrors({ email: emailError, password: passwordError });
+//       return;
+//     }
+
+//     setIsLoading(true);
+//     // console.log("loding")
+    
+//     try {
+//       // Simulate API call
+//       let result = await login(formData.email, formData.password);
+//       // console.log("result", result)
+      
+//       if(!result.success)
+//       {
+//         setErrors({ email: result.error || 'Login failed. Please try again.' });
+//         setIsLoading(false);
+//         return;
+//       }
+//       // Simulate success
+//       setIsSubmitted(true);
+//       setTimeout(() => {
+//         setIsSubmitted(false);
+//         setIsLoading(false);
+//       }, 2000);
+      
+//     } catch (error) {
+//       setErrors({ email: 'Login failed. Please try again.' });
+//       setIsLoading(false);
+//     }
+//   };
+
+//   // Floating particles animation
+//   const particles = Array.from({ length: 20 }, (_, i) => (
+//     <motion.div
+//       key={i}
+//       className="absolute w-2 h-2 bg-purple-400 rounded-full opacity-20"
+//       animate={{
+//         x: [0, Math.random() * 100 - 50],
+//         y: [0, Math.random() * 100 - 50],
+//         opacity: [0.2, 0.8, 0.2]
+//       }}
+//       transition={{
+//         duration: 3 + Math.random() * 2,
+//         repeat: Infinity,
+//         repeatType: 'reverse'
+//       }}
+//       style={{
+//         left: `${Math.random() * 100}%`,
+//         top: `${Math.random() * 100}%`
+//       }}
+//     />
+//   ));
+
+//   // Animation variants
+//   const containerVariants = {
+//     hidden: { opacity: 0, scale: 0.8 },
+//     visible: {
+//       opacity: 1,
+//       scale: 1,
+//       transition: {
+//         duration: 0.6,
+//         ease: 'easeOut',
+//         staggerChildren: 0.1
+//       }
+//     }
+//   };
+
+//   const itemVariants = {
+//     hidden: { opacity: 0, y: 20 },
+//     visible: {
+//       opacity: 1,
+//       y: 0,
+//       transition: { duration: 0.5, ease: 'easeOut' }
+//     }
+//   };
+
+//   const buttonVariants = {
+//     idle: { scale: 1 },
+//     hover: { scale: 1.02 },
+//     tap: { scale: 0.98 }
+//   };
+
+//   return (
+//     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-slate-100 flex items-center justify-center p-4 relative overflow-hidden">
+//       {/* Animated Background */}
+//       <div 
+//         className="absolute inset-0 opacity-30"
+//         style={{
+//           background: `radial-gradient(circle at ${mousePosition.x}px ${mousePosition.y}px, rgba(139, 92, 246, 0.1) 0%, transparent 50%)`
+//         }}
+//       />
+      
+//       {/* Floating Particles */}
+//       {particles}
+
+//       {/* Main Form Container */}
+//       <motion.div
+//         variants={containerVariants}
+//         initial="hidden"
+//         animate="visible"
+//         className="w-full max-w-md relative"
+//       >
+//         {/* Glassmorphism Card */}
+//         <motion.div
+//           variants={itemVariants}
+//           className="bg-white/80 backdrop-blur-lg rounded-2xl shadow-xl border border-white/20 p-8 relative"
+//         >
+//           {/* Header */}
+//           <motion.div variants={itemVariants} className="text-center mb-8">
+//             <motion.div
+//               initial={{ scale: 0 }}
+//               animate={{ scale: 1 }}
+//               transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
+//               className="w-16 h-16 bg-gradient-to-r from-purple-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4"
+//             >
+//               <User className="w-8 h-8 text-white" />
+//             </motion.div>
+//             <h1 className="text-3xl font-bold text-gray-800 mb-2">Welcome Back</h1>
+//             <p className="text-gray-600">Sign in to your account</p>
+//           </motion.div>
+
+//           {/* Form */}
+//           <div className="space-y-6">
+//             {/* Email Field */}
+//             <motion.div variants={itemVariants} className="relative">
+//               <div className="relative">
+//                 <motion.div
+//                   animate={{
+//                     scale: formData.email ? 1.1 : 1,
+//                     color: errors.email ? '#ef4444' : formData.email ? '#10b981' : '#6b7280'
+//                   }}
+//                   className="absolute left-3 top-1/2 transform -translate-y-1/2 z-10"
+//                 >
+//                   <Mail className="w-5 h-5" />
+//                 </motion.div>
+                
+//                 <motion.input
+//                   type="email"
+//                   name="email"
+//                   value={formData.email}
+//                   onChange={handleChange}
+//                   placeholder="Enter your email"
+//                   className={`w-full pl-12 pr-4 py-3 border-2 rounded-xl transition-all duration-300 bg-white/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-purple-500/50 ${
+//                     errors.email ? 'border-red-400 focus:border-red-500' : 
+//                     formData.email ? 'border-green-400 focus:border-green-500' : 
+//                     'border-gray-200 focus:border-purple-400'
+//                   }`}
+//                   whileFocus={{ scale: 1.02 }}
+//                   aria-label="Email address"
+//                   aria-invalid={!!errors.email}
+//                   aria-describedby={errors.email ? 'email-error' : undefined}
+//                 />
+                
+//                 {/* Validation Icons */}
+//                 <AnimatePresence>
+//                   {formData.email && (
+//                     <motion.div
+//                       initial={{ opacity: 0, scale: 0 }}
+//                       animate={{ opacity: 1, scale: 1 }}
+//                       exit={{ opacity: 0, scale: 0 }}
+//                       className="absolute right-3 top-1/2 transform -translate-y-1/2"
+//                     >
+//                       {errors.email ? (
+//                         <AlertCircle className="w-5 h-5 text-red-500" />
+//                       ) : (
+//                         <CheckCircle className="w-5 h-5 text-green-500" />
+//                       )}
+//                     </motion.div>
+//                   )}
+//                 </AnimatePresence>
+//               </div>
+              
+//               {/* Error Message */}
+//               <AnimatePresence>
+//                 {errors.email && (
+//                   <motion.p
+//                     id="email-error"
+//                     initial={{ opacity: 0, y: -10 }}
+//                     animate={{ opacity: 1, y: 0 }}
+//                     exit={{ opacity: 0, y: -10 }}
+//                     className="text-red-500 text-sm mt-1 ml-1"
+//                   >
+//                     {errors.email}
+//                   </motion.p>
+//                 )}
+//               </AnimatePresence>
+//             </motion.div>
+
+//             {/* Password Field */}
+//             <motion.div variants={itemVariants} className="relative">
+//               <div className="relative">
+//                 <motion.div
+//                   animate={{
+//                     scale: formData.password ? 1.1 : 1,
+//                     color: errors.password ? '#ef4444' : formData.password ? '#10b981' : '#6b7280'
+//                   }}
+//                   className="absolute left-3 top-1/2 transform -translate-y-1/2 z-10"
+//                 >
+//                   <Lock className="w-5 h-5" />
+//                 </motion.div>
+                
+//                 <motion.input
+//                   type={showPassword ? 'text' : 'password'}
+//                   name="password"
+//                   value={formData.password}
+//                   onChange={handleChange}
+//                   placeholder="Enter your password"
+//                   className={`w-full pl-12 pr-12 py-3 border-2 rounded-xl transition-all duration-300 bg-white/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-purple-500/50 ${
+//                     errors.password ? 'border-red-400 focus:border-red-500' : 
+//                     formData.password ? 'border-green-400 focus:border-green-500' : 
+//                     'border-gray-200 focus:border-purple-400'
+//                   }`}
+//                   whileFocus={{ scale: 1.02 }}
+//                   aria-label="Password"
+//                   aria-invalid={!!errors.password}
+//                   aria-describedby={errors.password ? 'password-error' : undefined}
+//                 />
+                
+//                 {/* Password Toggle */}
+//                 <motion.button
+//                   type="button"
+//                   onClick={() => setShowPassword(!showPassword)}
+//                   className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-purple-600 transition-colors"
+//                   whileHover={{ scale: 1.1 }}
+//                   whileTap={{ scale: 0.9 }}
+//                   aria-label={showPassword ? 'Hide password' : 'Show password'}
+//                 >
+//                   <AnimatePresence mode="wait">
+//                     {showPassword ? (
+//                       <motion.div
+//                         key="eye-off"
+//                         initial={{ opacity: 0, rotate: 180 }}
+//                         animate={{ opacity: 1, rotate: 0 }}
+//                         exit={{ opacity: 0, rotate: -180 }}
+//                         transition={{ duration: 0.2 }}
+//                       >
+//                         <EyeOff className="w-5 h-5" />
+//                       </motion.div>
+//                     ) : (
+//                       <motion.div
+//                         key="eye"
+//                         initial={{ opacity: 0, rotate: 180 }}
+//                         animate={{ opacity: 1, rotate: 0 }}
+//                         exit={{ opacity: 0, rotate: -180 }}
+//                         transition={{ duration: 0.2 }}
+//                       >
+//                         <Eye className="w-5 h-5" />
+//                       </motion.div>
+//                     )}
+//                   </AnimatePresence>
+//                 </motion.button>
+//               </div>
+              
+//               {/* Error Message */}
+//               <AnimatePresence>
+//                 {errors.password && (
+//                   <motion.p
+//                     id="password-error"
+//                     initial={{ opacity: 0, y: -10 }}
+//                     animate={{ opacity: 1, y: 0 }}
+//                     exit={{ opacity: 0, y: -10 }}
+//                     className="text-red-500 text-sm mt-1 ml-1"
+//                   >
+//                     {errors.password}
+//                   </motion.p>
+//                 )}
+//               </AnimatePresence>
+//             </motion.div>
+
+//             {/* Remember Me & Forgot Password */}
+//             <motion.div variants={itemVariants} className="flex items-center justify-between">
+//               <label className="flex items-center space-x-2 cursor-pointer">
+//                 <motion.input
+//                   type="checkbox"
+//                   name="rememberMe"
+//                   checked={formData.rememberMe}
+//                   onChange={handleChange}
+//                   className="w-4 h-4 text-purple-600 bg-white border-2 border-gray-300 rounded focus:ring-purple-500 focus:ring-2"
+//                   whileTap={{ scale: 0.9 }}
+//                 />
+//                 <span className="text-sm text-gray-600">Remember me</span>
+//               </label>
+              
+//               <motion.a
+//                 href="#"
+//                 className="text-sm text-purple-600 hover:text-purple-800 transition-colors"
+//                 whileHover={{ scale: 1.05 }}
+//                 whileTap={{ scale: 0.95 }}
+//               >
+//                 Forgot password?
+//               </motion.a>
+//             </motion.div>
+
+//             {/* Submit Button */}
+//             <motion.button
+//               type="button"
+//               onClick={handleSubmit}
+//               disabled={isLoading}
+//               variants={buttonVariants}
+//               initial="idle"
+//               whileHover="hover"
+//               whileTap="tap"
+//               className="w-full bg-gradient-to-r from-purple-500 to-purple-600 text-white py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed relative overflow-hidden"
+//             >
+//               <AnimatePresence mode="wait">
+//                 {isLoading ? (
+//                   <motion.div
+//                     key="loading"
+//                     initial={{ opacity: 0 }}
+//                     animate={{ opacity: 1 }}
+//                     exit={{ opacity: 0 }}
+//                     className="flex items-center justify-center"
+//                   >
+//                     <Loader2 className="w-5 h-5 animate-spin mr-2" />
+//                     Signing in...
+//                   </motion.div>
+//                 ) : isSubmitted ? (
+//                   <motion.div
+//                     key="success"
+//                     initial={{ opacity: 0, scale: 0.8 }}
+//                     animate={{ opacity: 1, scale: 1 }}
+//                     exit={{ opacity: 0, scale: 0.8 }}
+//                     className="flex items-center justify-center"
+//                   >
+//                     <CheckCircle className="w-5 h-5 mr-2" />
+//                     Welcome back!
+//                   </motion.div>
+//                 ) : (
+//                   <motion.span
+//                     key="idle"
+//                     initial={{ opacity: 0 }}
+//                     animate={{ opacity: 1 }}
+//                     exit={{ opacity: 0 }}
+//                   >
+//                     Sign In
+//                   </motion.span>
+//                 )}
+//               </AnimatePresence>
+//             </motion.button>
+
+//             {/* Google OAuth Button */}
+//             <GoogleLogin
+//               type="button"
+//               variants={buttonVariants}
+//               initial="idle"
+//                onSuccess={handleSubmitGoogle}
+//               whileHover="hover"
+//               whileTap="tap"
+//               className="w-full bg-white border-2 border-gray-200 text-gray-700 py-3 rounded-xl font-semibold hover:bg-gray-50 transition-all duration-300 flex items-center justify-center space-x-2"
+//             >
+//               <svg className="w-5 h-5" viewBox="0 0 24 24">
+//                 <path fill="#4285f4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+//                 <path fill="#34a853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+//                 <path fill="#fbbc05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+//                 <path fill="#ea4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+//               </svg>
+//               <span>Continue with Google</span>
+//             </GoogleLogin>
+//           </div>
+
+//           {/* Sign Up Link */}
+//           <motion.div variants={itemVariants} className="text-center mt-6">
+//             <p className="text-gray-600">
+//               Don't have an account?{' '}
+//               <motion.a
+//                 href="/signup"
+//                 className="text-purple-600 hover:text-purple-800 font-semibold transition-colors"
+//                 whileHover={{ scale: 1.05 }}
+//                 whileTap={{ scale: 0.95 }}
+//               >
+//                 Sign up
+//               </motion.a>
+//             </p>
+//           </motion.div>
+//         </motion.div>
+//       </motion.div>
+//     </div>
+//   );
+// };
+
+// export default ModernLoginForm;
 
 // "use client";
 // import React, { useState, useEffect } from 'react';

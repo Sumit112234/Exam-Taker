@@ -2,24 +2,39 @@
 
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { 
-  BookOpen, 
-  AlertCircle, 
-  User, 
-  Mail, 
-  Lock, 
-  CheckCircle, 
-  ArrowLeft, 
+import {
+  AlertCircle,
+  User,
+  Mail,
+  Lock,
+  CheckCircle,
+  ArrowLeft,
+  ArrowRight,
   Eye,
   EyeOff,
   Shield,
-  Zap,
   UserPlus,
-  GraduationCap,
   Target,
-  TrendingUp
+  TrendingUp,
+  GraduationCap,
+  Clock,
+  Check,
 } from "lucide-react"
 import { useRouter } from "next/navigation"
+
+const EASE = [0.16, 1, 0.3, 1]
+
+const GLOBAL_CSS = `
+@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Public+Sans:wght@400;500;600;700&display=swap');
+.ep-body{font-family:'Public Sans',ui-sans-serif,system-ui,sans-serif}
+.ep-display{font-family:'Bricolage Grotesque','Public Sans',ui-sans-serif,system-ui,sans-serif;font-optical-sizing:auto}
+.ep-num{font-variant-numeric:tabular-nums}
+.ep-body :focus-visible{outline:2px solid #1D4FE0;outline-offset:2px}
+.ep-on-dark :focus-visible{outline-color:#FFD84A}
+@keyframes ep-ring{0%{box-shadow:0 0 0 0 rgba(255,255,255,.35)}100%{box-shadow:0 0 0 10px rgba(255,255,255,0)}}
+.ep-pulse{animation:ep-ring 1.8s ease-out infinite}
+@media (prefers-reduced-motion:reduce){.ep-pulse{animation:none}}
+`
 
 export default function ProfessionalSignup() {
   const [formData, setFormData] = useState({
@@ -158,9 +173,9 @@ export default function ProfessionalSignup() {
   }
 
   const getStrengthColor = () => {
-    if (passwordStrength <= 2) return "from-red-500 to-red-600"
-    if (passwordStrength <= 3) return "from-yellow-500 to-orange-500"
-    return "from-green-500 to-emerald-500"
+    if (passwordStrength <= 2) return "#E5484D"
+    if (passwordStrength <= 3) return "#D97706"
+    return "#12A150"
   }
 
   const getStrengthText = () => {
@@ -171,9 +186,10 @@ export default function ProfessionalSignup() {
 
   if (!mounted) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-50 to-blue-50">
+      <div className="ep-body flex min-h-screen items-center justify-center bg-[#F3F6FB]">
+        <style dangerouslySetInnerHTML={{ __html: GLOBAL_CSS }} />
         <motion.div
-          className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full"
+          className="h-8 w-8 rounded-full border-4 border-[#1D4FE0] border-t-transparent"
           animate={{ rotate: 360 }}
           transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
         />
@@ -181,276 +197,302 @@ export default function ProfessionalSignup() {
     )
   }
 
+  const requirements = [
+    { key: 'length', label: '8+ characters' },
+    { key: 'uppercase', label: 'Uppercase letter' },
+    { key: 'lowercase', label: 'Lowercase letter' },
+    { key: 'number', label: 'Number' },
+    { key: 'special', label: 'Special character' }
+  ]
+
+  const features = [
+    {
+      icon: Target,
+      title: "Personalized plans",
+      description: "Study plans built around your target exam, timeline and weak areas"
+    },
+    {
+      icon: TrendingUp,
+      title: "Progress tracking",
+      description: "Detailed analytics to monitor accuracy and speed over time"
+    },
+    {
+      icon: GraduationCap,
+      title: "Expert-verified content",
+      description: "Questions and solutions reviewed by subject matter experts"
+    }
+  ]
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 relative">
-      {/* Subtle background pattern */}
-      <div className="absolute inset-0 opacity-5">
-        <div className="absolute inset-0" style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23000000' fill-opacity='0.4'%3E%3Ccircle cx='30' cy='30' r='1'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
-        }}/>
-      </div>
+    <div className="ep-body relative min-h-screen bg-[#F3F6FB] lg:grid lg:grid-cols-2">
+      <style dangerouslySetInnerHTML={{ __html: GLOBAL_CSS }} />
 
-      <div className="relative z-10 flex min-h-screen">
-        {/* Left side - Branding and Features */}
-        <div className="hidden lg:flex lg:w-1/2 flex-col justify-center px-12 xl:px-16">
-          <motion.div
-            initial={{ opacity: 0, x: -50 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8 }}
+      {/* Left side - Branding and Features */}
+      <div className="ep-on-dark relative hidden overflow-hidden bg-[#0C1A3A] lg:flex lg:flex-col lg:justify-between lg:p-12 xl:p-16">
+        <div
+          aria-hidden
+          className="absolute inset-0"
+          style={{
+            backgroundImage: 'radial-gradient(rgba(255,255,255,.09) 1px, transparent 1.5px)',
+            backgroundSize: '22px 22px',
+            WebkitMaskImage: 'radial-gradient(circle at 30% 20%, black, transparent 75%)',
+            maskImage: 'radial-gradient(circle at 30% 20%, black, transparent 75%)',
+          }}
+        />
+        <div aria-hidden className="absolute -right-24 top-1/3 h-80 w-80 rounded-full bg-[#1D4FE0]/25 blur-3xl" />
+        <div aria-hidden className="absolute -bottom-24 -left-16 h-72 w-72 rounded-full bg-[#2FB8B0]/15 blur-3xl" />
+
+        <motion.a
+          href="/"
+          initial={{ opacity: 0, y: -12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: EASE }}
+          className="relative flex items-center gap-3"
+        >
+          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-white p-1.5">
+            <img src="/exampro-logo-mark.png" alt="" className="h-full w-full object-contain" />
+          </span>
+          <span className="ep-display text-xl font-bold text-white">ExamPro</span>
+        </motion.a>
+
+        <div className="relative">
+          <motion.h2
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.15, ease: EASE }}
+            className="ep-display max-w-md text-4xl font-bold leading-[1.08] tracking-[-0.02em] text-white xl:text-[2.75rem]"
           >
-            {/* Logo and Brand */}
-            <div className="mb-12">
-              <div className="flex items-center gap-3 mb-6">
-                <motion.div
-                  whileHover={{ rotate: 360 }}
-                  transition={{ duration: 0.6 }}
-                  className="p-3 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl shadow-lg"
-                >
-                  <BookOpen className="h-8 w-8 text-white" />
-                </motion.div>
-                <h1 className="text-4xl font-bold text-gray-900">ExamPro</h1>
-              </div>
-              <h2 className="text-3xl font-bold text-gray-900 mb-4">
-                Start Your Journey to Exam Success
-              </h2>
-              <p className="text-xl text-gray-600 leading-relaxed">
-                Join thousands of students who trust ExamPro for their exam preparation. 
-                Get access to premium study materials, practice tests, and personalized learning paths.
-              </p>
-            </div>
+            Start your journey to exam success
+          </motion.h2>
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.25, ease: EASE }}
+            className="relative mt-4 max-w-sm text-white/70"
+          >
+            Join thousands of aspirants who trust ExamPro for SSC, Banking, Railways, UPSC and
+            State PSC preparation. Free tests to start, premium tests when you&apos;re ready.
+          </motion.p>
 
-            {/* Features */}
-            <div className="space-y-6">
-              {[
-                {
-                  icon: Target,
-                  title: "Personalized Learning",
-                  description: "AI-powered study plans tailored to your strengths and weaknesses"
-                },
-                {
-                  icon: TrendingUp,
-                  title: "Progress Tracking",
-                  description: "Detailed analytics to monitor your improvement over time"
-                },
-                {
-                  icon: GraduationCap,
-                  title: "Expert Content",
-                  description: "Created by education professionals and subject matter experts"
-                }
-              ].map((feature, index) => (
-                <motion.div
-                  key={feature.title}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.3 + index * 0.1 }}
-                  className="flex items-start gap-4"
-                >
-                  <div className="p-2 bg-blue-100 rounded-lg">
-                    <feature.icon className="h-6 w-6 text-blue-600" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-gray-900 mb-1">{feature.title}</h3>
-                    <p className="text-gray-600">{feature.description}</p>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          </motion.div>
+          <div className="relative mt-9 space-y-5">
+            {features.map((feature, index) => (
+              <motion.div
+                key={feature.title}
+                initial={{ opacity: 0, x: -16 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.35 + index * 0.1, duration: 0.5, ease: EASE }}
+                className="flex items-start gap-4"
+              >
+                <div className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-white/10">
+                  <feature.icon className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-white">{feature.title}</h3>
+                  <p className="mt-0.5 text-sm leading-relaxed text-white/60">{feature.description}</p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
         </div>
 
-        {/* Right side - Signup Form */}
-        <form onSubmit={handleSubmit} className="w-full lg:w-1/2 flex flex-col justify-center px-6 py-12 lg:px-12">
-          <motion.div
-            initial={{ opacity: 0, x: 50 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8 }}
-            className="w-full max-w-md mx-auto"
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.7, delay: 0.7 }}
+          className="relative flex items-center gap-2 text-sm text-white/60"
+        >
+          <span className="ep-pulse h-2 w-2 rounded-full bg-[#3DDC84]" />
+          <span className="ep-num font-semibold text-white">50,000+</span>
+          aspirants already preparing on ExamPro
+        </motion.div>
+      </div>
+
+      {/* Right side - Signup Form */}
+      <form onSubmit={handleSubmit} className="flex min-h-screen flex-col justify-center px-6 py-12 lg:px-12">
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, ease: EASE }}
+          className="mx-auto w-full max-w-md"
+        >
+          <motion.a
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.1, duration: 0.5 }}
+            href="/"
+            className="mb-6 inline-flex items-center gap-1.5 text-sm font-semibold text-[#56637F] transition-colors hover:text-[#0C1A3A] lg:hidden"
           >
-            {/* Mobile branding */}
-            <div className="lg:hidden mb-8 text-center">
-              <div className="flex items-center justify-center gap-3 mb-4">
-                <div className="p-2 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl">
-                  <BookOpen className="h-6 w-6 text-white" />
+            <ArrowLeft className="h-4 w-4" />
+            Back to ExamPro
+          </motion.a>
+
+          {/* Mobile branding */}
+          <div className="mb-8 flex items-center justify-center gap-2.5 lg:hidden">
+            <span className="grid h-9 w-9 place-items-center rounded-lg bg-[#E8EEFE]">
+              <img src="/exampro-logo-mark.png" alt="" className="h-6 w-6 object-contain" />
+            </span>
+            <span className="ep-display text-xl font-bold text-[#0C1A3A]">ExamPro</span>
+          </div>
+
+          {/* Form Header */}
+          <div className="mb-7">
+            <motion.div
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.15 }}
+              className="mb-4 inline-flex items-center gap-1.5 rounded-full bg-[#E8EEFE] px-3 py-1 text-sm font-semibold text-[#1D4FE0]"
+            >
+              <UserPlus className="h-3.5 w-3.5" />
+              Create account
+            </motion.div>
+
+            <h2 className="ep-display text-3xl font-bold tracking-tight text-[#0C1A3A]">
+              Join ExamPro today
+            </h2>
+            <p className="mt-1.5 text-[#56637F]">
+              Create your account and start preparing for success
+            </p>
+          </div>
+
+          {/* Form Card */}
+          <div className="rounded-2xl border border-[#DDE4F0] bg-white p-7 shadow-[0_30px_70px_-35px_rgba(12,26,58,0.35)] sm:p-8">
+            <AnimatePresence>
+              {error && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10, height: 0 }}
+                  animate={{ opacity: 1, y: 0, height: "auto" }}
+                  exit={{ opacity: 0, y: -10, height: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="mb-6 overflow-hidden"
+                >
+                  <div className="flex items-center gap-3 rounded-lg border border-[#E5484D]/30 bg-[#FDECEC] p-4">
+                    <AlertCircle className="h-5 w-5 shrink-0 text-[#E5484D]" />
+                    <p className="text-sm font-medium text-[#A6282E]">{error}</p>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            <div className="space-y-5">
+              {/* Full Name */}
+              <div>
+                <label htmlFor="name" className="mb-1.5 block text-sm font-semibold text-[#0C1A3A]">
+                  Full name
+                </label>
+                <div className="relative">
+                  <User className="pointer-events-none absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-[#8A97B3]" />
+                  <input
+                    id="name"
+                    name="name"
+                    type="text"
+                    placeholder="Enter your full name"
+                    value={formData.name}
+                    onChange={handleChange}
+                    onFocus={() => setFocusedField('name')}
+                    onBlur={() => setFocusedField(null)}
+                    required
+                    className={`w-full rounded-lg border-2 bg-white py-3 pl-11 pr-4 text-[#0C1A3A] outline-none transition-colors duration-200 placeholder:text-[#8A97B3] ${
+                      focusedField === 'name' ? 'border-[#1D4FE0]' : 'border-[#DDE4F0] hover:border-[#C9D3E6]'
+                    }`}
+                  />
                 </div>
-                <h1 className="text-2xl font-bold text-gray-900">ExamPro</h1>
               </div>
-            </div>
 
-            {/* Form Header */}
-            <div className="mb-8">
-              <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
-                className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-sm font-medium mb-4"
-              >
-                <UserPlus className="h-4 w-4" />
-                Create Account
-              </motion.div>
-              
-              <h2 className="text-3xl font-bold text-gray-900 mb-2">
-                Join ExamPro Today
-              </h2>
-              <p className="text-gray-600">
-                Create your account and start preparing for success
-              </p>
-            </div>
+              {/* Email */}
+              <div>
+                <label htmlFor="email" className="mb-1.5 block text-sm font-semibold text-[#0C1A3A]">
+                  Email address
+                </label>
+                <div className="relative">
+                  <Mail className="pointer-events-none absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-[#8A97B3]" />
+                  <input
+                    id="email"
+                    name="email"
+                    type="email"
+                    placeholder="Enter your email address"
+                    value={formData.email}
+                    onChange={handleChange}
+                    onFocus={() => setFocusedField('email')}
+                    onBlur={() => setFocusedField(null)}
+                    required
+                    className={`w-full rounded-lg border-2 bg-white py-3 pl-11 pr-4 text-[#0C1A3A] outline-none transition-colors duration-200 placeholder:text-[#8A97B3] ${
+                      focusedField === 'email' ? 'border-[#1D4FE0]' : 'border-[#DDE4F0] hover:border-[#C9D3E6]'
+                    }`}
+                  />
+                </div>
+              </div>
 
-            {/* Form Card */}
-            <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8">
-              <AnimatePresence>
-                {error && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -10, scale: 0.95 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: -10, scale: 0.95 }}
-                    transition={{ duration: 0.3 }}
-                    className="mb-6"
+              {/* Password */}
+              <div>
+                <label htmlFor="password" className="mb-1.5 block text-sm font-semibold text-[#0C1A3A]">
+                  Password
+                </label>
+                <div className="relative">
+                  <Lock className="pointer-events-none absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-[#8A97B3]" />
+                  <input
+                    id="password"
+                    name="password"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Create a strong password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    onFocus={() => setFocusedField('password')}
+                    onBlur={() => setFocusedField(null)}
+                    required
+                    className={`w-full rounded-lg border-2 bg-white py-3 pl-11 pr-11 text-[#0C1A3A] outline-none transition-colors duration-200 placeholder:text-[#8A97B3] ${
+                      focusedField === 'password' ? 'border-[#1D4FE0]' : 'border-[#DDE4F0] hover:border-[#C9D3E6]'
+                    }`}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#8A97B3] transition-colors hover:text-[#1D4FE0]"
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
                   >
-                    <div className="flex items-center gap-3 p-4 bg-red-50 border border-red-200 rounded-lg">
-                      <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0" />
-                      <p className="text-red-800 text-sm font-medium">{error}</p>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+                    {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                  </button>
+                </div>
 
-              <div className="space-y-6">
-                {/* Full Name */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.3 }}
-                >
-                  <label htmlFor="name" className="block text-sm font-semibold text-gray-900 mb-2">
-                    Full Name
-                  </label>
-                  <div className="relative">
-                    <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                    <input
-                      id="name"
-                      name="name"
-                      type="text"
-                      placeholder="Enter your full name"
-                      value={formData.name}
-                      onChange={handleChange}
-                      onFocus={() => setFocusedField('name')}
-                      onBlur={() => setFocusedField(null)}
-                      required
-                      className={`w-full pl-10 pr-4 py-3 border rounded-lg text-gray-900 placeholder-gray-500 transition-all duration-200 ${
-                        focusedField === 'name' 
-                          ? 'border-blue-500 ring-2 ring-blue-100 shadow-sm' 
-                          : 'border-gray-300 hover:border-gray-400'
-                      }`}
-                    />
-                  </div>
-                </motion.div>
-
-                {/* Email */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.4 }}
-                >
-                  <label htmlFor="email" className="block text-sm font-semibold text-gray-900 mb-2">
-                    Email Address
-                  </label>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                    <input
-                      id="email"
-                      name="email"
-                      type="email"
-                      placeholder="Enter your email address"
-                      value={formData.email}
-                      onChange={handleChange}
-                      onFocus={() => setFocusedField('email')}
-                      onBlur={() => setFocusedField(null)}
-                      required
-                      className={`w-full pl-10 pr-4 py-3 border rounded-lg text-gray-900 placeholder-gray-500 transition-all duration-200 ${
-                        focusedField === 'email' 
-                          ? 'border-blue-500 ring-2 ring-blue-100 shadow-sm' 
-                          : 'border-gray-300 hover:border-gray-400'
-                      }`}
-                    />
-                  </div>
-                </motion.div>
-
-                {/* Password */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.5 }}
-                >
-                  <label htmlFor="password" className="block text-sm font-semibold text-gray-900 mb-2">
-                    Password
-                  </label>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                    <input
-                      id="password"
-                      name="password"
-                      type={showPassword ? "text" : "password"}
-                      placeholder="Create a strong password"
-                      value={formData.password}
-                      onChange={handleChange}
-                      onFocus={() => setFocusedField('password')}
-                      onBlur={() => setFocusedField(null)}
-                      required
-                      className={`w-full pl-10 pr-12 py-3 border rounded-lg text-gray-900 placeholder-gray-500 transition-all duration-200 ${
-                        focusedField === 'password' 
-                          ? 'border-blue-500 ring-2 ring-blue-100 shadow-sm' 
-                          : 'border-gray-300 hover:border-gray-400'
-                      }`}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
-                    >
-                      {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                    </button>
-                  </div>
-                  
-                  {/* Password Requirements */}
+                {/* Password Requirements */}
+                <AnimatePresence>
                   {formData.password && (
                     <motion.div
                       initial={{ opacity: 0, height: 0 }}
                       animate={{ opacity: 1, height: "auto" }}
-                      className="mt-3 space-y-2"
+                      exit={{ opacity: 0, height: 0 }}
+                      className="mt-3 space-y-2 overflow-hidden"
                     >
                       <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium text-gray-700">Password Strength</span>
-                        <span className={`text-sm font-semibold ${
-                          passwordStrength <= 2 ? 'text-red-600' : 
-                          passwordStrength <= 3 ? 'text-yellow-600' : 'text-green-600'
-                        }`}>
+                        <span className="text-sm font-medium text-[#56637F]">Password strength</span>
+                        <span
+                          className="text-sm font-bold"
+                          style={{ color: getStrengthColor() }}
+                        >
                           {getStrengthText()}
                         </span>
                       </div>
-                      <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
-                        <motion.div
-                          className={`h-full bg-gradient-to-r ${getStrengthColor()} rounded-full`}
-                          initial={{ width: 0 }}
-                          animate={{ width: `${(passwordStrength / 5) * 100}%` }}
-                          transition={{ duration: 0.3 }}
-                        />
+                      <div className="flex h-1.5 gap-1">
+                        {[0, 1, 2, 3, 4].map((i) => (
+                          <div key={i} className="flex-1 overflow-hidden rounded-full bg-[#DDE4F0]">
+                            <motion.div
+                              className="h-full rounded-full"
+                              initial={{ scaleX: 0 }}
+                              animate={{ scaleX: i < passwordStrength ? 1 : 0 }}
+                              transition={{ duration: 0.3, delay: i * 0.05 }}
+                              style={{ backgroundColor: getStrengthColor(), transformOrigin: "left" }}
+                            />
+                          </div>
+                        ))}
                       </div>
-                      <div className="grid grid-cols-2 gap-2 text-xs">
-                        {[
-                          { key: 'length', label: '8+ characters' },
-                          { key: 'uppercase', label: 'Uppercase letter' },
-                          { key: 'lowercase', label: 'Lowercase letter' },
-                          { key: 'number', label: 'Number' },
-                          { key: 'special', label: 'Special character' }
-                        ].map((req) => (
-                          <div key={req.key} className="flex items-center gap-1">
+                      <div className="grid grid-cols-2 gap-x-2 gap-y-1.5 text-xs">
+                        {requirements.map((req) => (
+                          <div key={req.key} className="flex items-center gap-1.5">
                             {validations[req.key] ? (
-                              <CheckCircle className="h-3 w-3 text-green-500" />
+                              <CheckCircle className="h-3.5 w-3.5 shrink-0 text-[#12A150]" />
                             ) : (
-                              <div className="h-3 w-3 border border-gray-300 rounded-full" />
+                              <div className="h-3.5 w-3.5 shrink-0 rounded-full border-2 border-[#C9D3E6]" />
                             )}
-                            <span className={validations[req.key] ? 'text-green-600' : 'text-gray-500'}>
+                            <span className={validations[req.key] ? 'text-[#0C6B37]' : 'text-[#8A97B3]'}>
                               {req.label}
                             </span>
                           </div>
@@ -458,131 +500,108 @@ export default function ProfessionalSignup() {
                       </div>
                     </motion.div>
                   )}
-                </motion.div>
+                </AnimatePresence>
+              </div>
 
-                {/* Confirm Password */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.6 }}
-                >
-                  <label htmlFor="confirmPassword" className="block text-sm font-semibold text-gray-900 mb-2">
-                    Confirm Password
-                  </label>
-                  <div className="relative">
-                    <Shield className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                    <input
-                      id="confirmPassword"
-                      name="confirmPassword"
-                      type={showConfirmPassword ? "text" : "password"}
-                      placeholder="Confirm your password"
-                      value={formData.confirmPassword}
-                      onChange={handleChange}
-                      onFocus={() => setFocusedField('confirmPassword')}
-                      onBlur={() => setFocusedField(null)}
-                      required
-                      className={`w-full pl-10 pr-12 py-3 border rounded-lg text-gray-900 placeholder-gray-500 transition-all duration-200 ${
-                        focusedField === 'confirmPassword' 
-                          ? 'border-blue-500 ring-2 ring-blue-100 shadow-sm' 
-                          : 'border-gray-300 hover:border-gray-400'
-                      }`}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
-                    >
-                      {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                    </button>
-                  </div>
-                  
-                  {/* Password Match Status */}
+              {/* Confirm Password */}
+              <div>
+                <label htmlFor="confirmPassword" className="mb-1.5 block text-sm font-semibold text-[#0C1A3A]">
+                  Confirm password
+                </label>
+                <div className="relative">
+                  <Shield className="pointer-events-none absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-[#8A97B3]" />
+                  <input
+                    id="confirmPassword"
+                    name="confirmPassword"
+                    type={showConfirmPassword ? "text" : "password"}
+                    placeholder="Confirm your password"
+                    value={formData.confirmPassword}
+                    onChange={handleChange}
+                    onFocus={() => setFocusedField('confirmPassword')}
+                    onBlur={() => setFocusedField(null)}
+                    required
+                    className={`w-full rounded-lg border-2 bg-white py-3 pl-11 pr-11 text-[#0C1A3A] outline-none transition-colors duration-200 placeholder:text-[#8A97B3] ${
+                      focusedField === 'confirmPassword' ? 'border-[#1D4FE0]' : 'border-[#DDE4F0] hover:border-[#C9D3E6]'
+                    }`}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#8A97B3] transition-colors hover:text-[#1D4FE0]"
+                    aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
+                  >
+                    {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                  </button>
+                </div>
+
+                <AnimatePresence>
                   {formData.confirmPassword && (
                     <motion.div
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
                       className="mt-2 flex items-center gap-2"
                     >
                       {validations.match ? (
                         <>
-                          <CheckCircle className="h-4 w-4 text-green-500" />
-                          <span className="text-sm text-green-600 font-medium">Passwords match</span>
+                          <CheckCircle className="h-4 w-4 text-[#12A150]" />
+                          <span className="text-sm font-medium text-[#0C6B37]">Passwords match</span>
                         </>
                       ) : (
                         <>
-                          <AlertCircle className="h-4 w-4 text-red-500" />
-                          <span className="text-sm text-red-600 font-medium">Passwords don't match</span>
+                          <AlertCircle className="h-4 w-4 text-[#E5484D]" />
+                          <span className="text-sm font-medium text-[#A6282E]">Passwords don&apos;t match</span>
                         </>
                       )}
                     </motion.div>
                   )}
-                </motion.div>
+                </AnimatePresence>
+              </div>
 
-                {/* Submit Button */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.7 }}
-                  className="pt-4"
-                >
-                  <button
-                    type="submit"
-                    disabled={isLoading}
-                    className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 disabled:from-gray-400 disabled:to-gray-500 text-white font-semibold py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center gap-2"
-                  >
-                    {isLoading ? (
-                      <>
-                        <motion.div
-                          className="w-5 h-5 border-2 border-white border-t-transparent rounded-full"
-                          animate={{ rotate: 360 }}
-                          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                        />
-                        Creating Account...
-                      </>
-                    ) : (
-                      <>
-                        <Zap className="h-5 w-5" />
-                        Create Account
-                      </>
-                    )}
-                  </button>
-                </motion.div>
-
-              {/* Sign In Link */}
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.8 }}
-                className="mt-6 text-center"
+              {/* Submit Button */}
+              <motion.button
+                type="submit"
+                disabled={isLoading}
+                whileHover={{ scale: isLoading ? 1 : 1.01 }}
+                whileTap={{ scale: isLoading ? 1 : 0.98 }}
+                className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#1D4FE0] py-3.5 font-bold text-white shadow-[0_3px_0_0_#1237A6] transition-colors duration-200 hover:bg-[#2A5CF0] disabled:cursor-not-allowed disabled:opacity-70"
               >
-                <p className="text-gray-600">
-                  Already have an account?{" "}
-                  <a href="/login" className="text-blue-600 hover:text-blue-700 font-semibold hover:underline transition-colors">
-                    Sign in
-                  </a>
-                </p>
-              </motion.div>
+                {isLoading ? (
+                  <>
+                    <motion.div
+                      className="h-5 w-5 rounded-full border-2 border-white border-t-transparent"
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                    />
+                    Creating account...
+                  </>
+                ) : (
+                  <>
+                    Create account
+                    <ArrowRight className="h-5 w-5" />
+                  </>
+                )}
+              </motion.button>
             </div>
 
-            {/* Terms */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.9 }}
-              className="mt-6 text-center"
-            >
-              <p className="text-xs text-gray-500">
-                By creating an account, you agree to our{" "}
-                <a href="/terms" className="text-blue-600 hover:underline">Terms of Service</a>
-                {" "}and{" "}
-                <a href="/privacy" className="text-blue-600 hover:underline">Privacy Policy</a>
-              </p>
-            </motion.div>
+            {/* Sign In Link */}
+            <div className="mt-6 text-center text-sm text-[#56637F]">
+              Already have an account?{" "}
+              <a href="/login" className="font-semibold text-[#1D4FE0] transition-colors hover:text-[#153CA8]">
+                Sign in
+              </a>
+            </div>
           </div>
+
+          {/* Terms */}
+          <p className="mt-6 text-center text-xs text-[#8A97B3]">
+            By creating an account, you agree to our{" "}
+            <a href="/terms" className="text-[#56637F] underline hover:text-[#1D4FE0]">Terms of Service</a>
+            {" "}and{" "}
+            <a href="/privacy" className="text-[#56637F] underline hover:text-[#1D4FE0]">Privacy Policy</a>
+          </p>
         </motion.div>
-        
       </form>
-    </div>
     </div>
   )
 }
